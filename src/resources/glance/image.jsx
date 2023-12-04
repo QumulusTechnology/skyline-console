@@ -149,8 +149,8 @@ export const canSnapshotCreateInstance = (item) => item.status === 'active';
 
 export const getImageSystemTabs = () => {
   const valueList = [
-    'centos',
     'ubuntu',
+    'centos',
     'fedora',
     'windows',
     'debian',

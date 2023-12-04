@@ -60,10 +60,36 @@ export class FlavorSelectTable extends Component {
     this.initDefaultValue();
   }
 
-  get architectures() {
-    const custom = {
-      architecture: 'custom',
+  get defaultFlavor() {
+    const data = {
+      data: this.flavors,
+      tab: 'all',
+      selectedRowKeys: undefined,
+      selectedRows: undefined,
     };
+
+    const { value } = this.props;
+
+    if (
+      value &&
+      value.selectedRowKeys &&
+      value.selectedRowKeys.length &&
+      value.selectedRows &&
+      value.selectedRows.length
+    ) {
+      const { selectedRowKeys, selectedRows } = value;
+
+      data.selectedRowKeys = selectedRowKeys;
+      data.selectedRows = selectedRows;
+    } else if (this.flavors.length) {
+      data.selectedRows = [this.flavors[0]];
+      data.selectedRowKeys = [this.flavors[0].id];
+    }
+
+    return data;
+  }
+
+  get architectures() {
     const all = {
       architecture: 'all',
     };
@@ -72,7 +98,7 @@ export class FlavorSelectTable extends Component {
       (it) => it.key === 'flavor_families'
     );
     if (!item) {
-      return [all, custom];
+      return [all];
     }
     let values = [];
     try {
@@ -92,7 +118,7 @@ export class FlavorSelectTable extends Component {
       // eslint-disable-next-line no-console
       console.log(e);
     }
-    return [all, ...values, custom];
+    return [all, ...values];
   }
 
   get categories() {
@@ -143,7 +169,11 @@ export class FlavorSelectTable extends Component {
           return it.architecture === arch;
         }
         return it.architecture === arch && it.category === category;
-      });
+      })
+      .map((it) => ({
+        ...it,
+        key: it.id,
+      }));
   }
 
   getBaseColumns() {
@@ -166,6 +196,14 @@ export class FlavorSelectTable extends Component {
           render: (value, record) => getFlavorArchInfo(record),
         },
       ];
+    }
+    if (arch === 'x86_architecture') {
+      base = base.filter(
+        (it) =>
+          it.dataIndex !== 'quota:vif_outbound_average' &&
+          it.dataIndex !== 'OS-FLV-EXT-DATA:ephemeral' &&
+          it.dataIndex !== 'quota:disk_total_iops_sec'
+      );
     }
     return base;
   }
@@ -217,7 +255,7 @@ export class FlavorSelectTable extends Component {
       if (flavor) {
         const { architecture, category } = flavor;
         this.setState({
-          arch: architecture,
+          arch: architecture === 'custom' ? 'all' : architecture,
           category,
         });
       }
@@ -266,15 +304,17 @@ export class FlavorSelectTable extends Component {
 
   renderCategoryButtons() {
     const { category } = this.state;
-    const items = this.categories.map((it) => {
-      const { name } = it;
-      const label = flavorCategoryList[name] || name;
-      return (
-        <Radio.Button value={name} key={name}>
-          {label}
-        </Radio.Button>
-      );
-    });
+    const items = this.categories
+      .filter((item) => item.name !== 'high_clock_speed')
+      .map((it) => {
+        const { name } = it;
+        const label = flavorCategoryList[name] || name;
+        return (
+          <Radio.Button value={name} key={name}>
+            {label}
+          </Radio.Button>
+        );
+      });
     return (
       <Radio.Group
         id="flavor-select-category"
@@ -329,6 +369,7 @@ export class FlavorSelectTable extends Component {
       isLoading,
       filterParams: getFlavorSearchFilters(),
       value,
+      initValue: this.defaultFlavor,
       onChange: this.onChange,
       disabledFunc,
     };
