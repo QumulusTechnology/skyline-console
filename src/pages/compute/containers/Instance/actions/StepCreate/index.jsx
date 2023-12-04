@@ -83,10 +83,6 @@ export class StepCreate extends StepAction {
     return !!this.errorMsg;
   }
 
-  get disableSubmit() {
-    return !!this.errorMsg;
-  }
-
   get instanceQuota() {
     const { instances: { left = 0 } = {} } =
       toJS(this.projectStore.novaQuota) || {};
@@ -254,6 +250,51 @@ export class StepCreate extends StepAction {
     }
     return t(
       'The creation instruction has been issued, please refresh to see the actual situation in the list.'
+    );
+  }
+
+  get allowSubmit() {
+    return true;
+  }
+
+  get disableSubmit() {
+    const {
+      flavor,
+      image,
+      keypair,
+      loginType,
+      name,
+      networkSelect,
+      networkSelectRows,
+      networks,
+      physicalNodeType,
+      securityGroup,
+      source,
+    } = this.state.data;
+
+    return (
+      !flavor ||
+      !flavor.selectedRowKeys.length ||
+      !flavor.selectedRows.length ||
+      !image ||
+      !image.selectedRowKeys.length ||
+      !image.selectedRows.length ||
+      !keypair ||
+      !keypair.selectedRowKeys.length ||
+      !keypair.selectedRows.length ||
+      !loginType ||
+      !name ||
+      !networkSelect ||
+      !networkSelect.selectedRowKeys.length ||
+      !networkSelect.selectedRows.length ||
+      !networkSelectRows?.length ||
+      !networks?.length ||
+      !physicalNodeType ||
+      !securityGroup ||
+      !securityGroup.selectedRowKeys.length ||
+      !securityGroup.selectedRows.length ||
+      !source ||
+      !!this.errorMsg
     );
   }
 

@@ -228,6 +228,10 @@ export default class BaseStepForm extends React.Component {
     return false;
   }
 
+  get allowSubmit() {
+    return false;
+  }
+
   setFormRefs() {
     this.formRefs = this.steps.map(() => React.createRef());
   }
@@ -392,7 +396,7 @@ export default class BaseStepForm extends React.Component {
           </Button>
           {this.getPrevBtn()}
           {this.getNextBtn()}
-          {current === this.steps.length - 1 && (
+          {(current === this.steps.length - 1 || this.allowSubmit) && (
             <Button
               type="primary"
               onClick={this.onClickSubmit}

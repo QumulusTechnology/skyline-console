@@ -70,7 +70,6 @@ export const flavorArchitectures = {
   heterogeneous_computing: t('Heterogeneous Computing'),
   bare_metal: t('Bare Metal'),
   arm_architecture: t('ARM Architecture'),
-  custom: t('Custom'),
   all: t('All Flavors'),
 };
 

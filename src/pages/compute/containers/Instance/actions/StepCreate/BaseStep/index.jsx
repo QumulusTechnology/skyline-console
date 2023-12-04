@@ -21,6 +21,13 @@ import globalServerStore from 'stores/nova/instance';
 import globalImageStore from 'stores/glance/image';
 import globalInstanceSnapshotStore from 'stores/glance/instance-snapshot';
 import globalVolumeTypeStore from 'stores/cinder/volume-type';
+import globalFlavorStore from 'stores/nova/flavor';
+import { SecurityGroupStore } from 'stores/neutron/security-group';
+import { NetworkStore } from 'stores/neutron/network';
+import { SubnetStore } from 'stores/neutron/subnet';
+import { ipTypeOptions } from 'resources/neutron/network';
+import globalKeyPairStore from 'stores/nova/keypair';
+import { physicalNodeTypes } from 'resources/nova/instance';
 import globalAvailabilityZoneStore from 'stores/nova/zone';
 import { VolumeStore } from 'stores/cinder/volume';
 import {
@@ -48,11 +55,20 @@ export class BaseStep extends Base {
     this.volumeStore = new VolumeStore();
     this.volumeTypeStore = globalVolumeTypeStore;
     this.instanceSnapshotStore = globalInstanceSnapshotStore;
+    this.flavorStore = globalFlavorStore;
+    this.networkStore = new NetworkStore();
+    this.subnetStore = new SubnetStore();
+    this.securityGroupStore = new SecurityGroupStore();
+    this.keyPairStore = globalKeyPairStore;
+    this.subnetMap = {};
     this.getAvailZones();
     this.getImages();
     this.getVolumeTypes();
     this.getVolumes();
     this.getInstanceSnapshots();
+    this.getSecurityGroups();
+    this.getNetworks();
+    this.getKeypairs();
     this.initSourceChange();
   }
 
@@ -81,6 +97,12 @@ export class BaseStep extends Base {
       source,
       project: this.currentProjectName,
       dataDisk: [],
+      flavor: {
+        data: [],
+        selectedRowKeys: undefined,
+        selectedRows: undefined,
+        tab: 'all',
+      },
     };
     if (source.value === 'image') {
       values.bootFromVolume = true;
@@ -95,6 +117,10 @@ export class BaseStep extends Base {
         value: it.zoneName,
         label: it.zoneName,
       }));
+  }
+
+  get flavors() {
+    return toJS(this.imageStore.list.data);
   }
 
   get images() {
@@ -115,6 +141,22 @@ export class BaseStep extends Base {
     return images.map((it) => ({
       ...it,
       key: it.id,
+    }));
+  }
+
+  get networks() {
+    return toJS(this.networkStore.list.data);
+  }
+
+  get securityGroups() {
+    return toJS(this.securityGroupStore.list.data);
+  }
+
+  get keypairs() {
+    return toJS(this.keyPairStore.list.data).map((it) => ({
+      ...it,
+      key: it.name,
+      id: it.name,
     }));
   }
 
@@ -154,9 +196,94 @@ export class BaseStep extends Base {
 
   get defaultVolumeType() {
     const data = {
-      size: 10,
+      size: 40,
       deleteType: 1,
+      type: undefined,
+      typeOption: undefined,
     };
+
+    if (this.volumeTypes.length) {
+      data.type = this.volumeTypes[0].value;
+      data.typeOption = this.volumeTypes[0];
+    }
+
+    return data;
+  }
+
+  get defaultImage() {
+    const data = {
+      data: this.images,
+      selectedRows: undefined,
+      selectedRowKeys: undefined,
+      tab: 'ubuntu',
+    };
+
+    const {
+      context: { image },
+    } = this.props;
+
+    if (image) {
+      data.selectedRowKeys = image.selectedRowKeys;
+      data.selectedRows = image.selectedRows;
+    } else if (this.images.length) {
+      const defaultImg = this.images.find(
+        (it) => it.name === 'Ubuntu-22.04-Jammy'
+      );
+
+      if (defaultImg) data.selectedRowKeys = [defaultImg.key];
+      data.selectedRows = [defaultImg];
+    }
+
+    return data;
+  }
+
+  get defaultNetwork() {
+    const data = {
+      data: this.networks,
+      selectedRows: undefined,
+      selectedRowKeys: undefined,
+      tabKey: 'project',
+    };
+
+    if (this.networks.length) {
+      const network = this.networks.find((it) => it.name === 'internal');
+
+      data.selectedRows = [network];
+      data.selectedRowKeys = [network.id];
+    }
+
+    return data;
+  }
+
+  get defaultSecurityGroup() {
+    const data = {
+      data: this.securityGroups,
+      selectedRows: undefined,
+      selectedRowKeys: undefined,
+      tab: '',
+    };
+
+    if (this.securityGroups.length) {
+      data.selectedRows = [this.securityGroups[0]];
+      data.selectedRowKeys = [this.securityGroups[0].id];
+    }
+
+    return data;
+  }
+
+  get defaultKeyPair() {
+    const data = {
+      data: this.keypairs,
+      selectedRows: undefined,
+      selectedRowKeys: undefined,
+      tab: '',
+    };
+
+    if (this.keypairs.length) {
+      data.selectedRows = [this.keypairs[0]];
+      data.selectedRowKeys = [this.keypairs[0].name];
+    }
+
     return data;
   }
 
@@ -213,11 +340,164 @@ export class BaseStep extends Base {
     } else {
       await this.imageStore.fetchList({ all_projects: this.hasAdminRole });
     }
+
+    if (this.images.length) {
+      this.updateFormValue('image', this.defaultImage);
+
+      this.updateContext({
+        image: this.defaultImage,
+      });
+    }
+  }
+
+  async getNetworks() {
+    await this.networkStore.fetchList();
+
+    const {
+      context: { networkSelect, networkSelectRows, networks },
+    } = this.props;
+
+    if (
+      (!networkSelect ||
+        (!networkSelect.selectedRows?.length &&
+          !networkSelect.selectedRowKeys?.length)) &&
+      !networkSelectRows?.length &&
+      !networks?.length
+    ) {
+      this.updateContext({
+        networkSelect: this.defaultNetwork,
+        networkSelectRows: this.defaultNetwork.selectedRows,
+      });
+
+      await this.getSubnets();
+    }
+  }
+
+  async getSubnetPromise(networkId) {
+    if (!this.subnetMap[networkId]) {
+      const result = await this.subnetStore.fetchList({
+        network_id: networkId,
+      });
+      this.subnetMap[networkId] = result;
+    }
+    return this.subnetMap[networkId];
+  }
+
+  async getSubnets() {
+    const {
+      context: { networkSelectRows, networks = [] },
+    } = this.props;
+    const results = await Promise.all(
+      networkSelectRows.map(async (it) => this.getSubnetPromise(it.id))
+    );
+
+    const subnets = [];
+    results.forEach((result) => {
+      subnets.push(...result);
+    });
+
+    const usedIndex = [];
+    const initValue = networkSelectRows.map((network, index) => {
+      const subnet = subnets.find((it) => it.network_id === network.id);
+      const item = networks.find((it, networkIndex) => {
+        if (it.value.network === network.id) {
+          usedIndex.push(networkIndex);
+          return true;
+        }
+        return false;
+      });
+      if (item) {
+        return item;
+      }
+      return {
+        value: {
+          network: network.id,
+          subnet: subnet.id,
+          networkOption: network,
+          subnetOption: subnet,
+          ipTypeOption: ipTypeOptions[0],
+          ipType: 0,
+        },
+        index,
+      };
+    });
+
+    const networkIds = networkSelectRows.map((it) => it.id);
+    networks.forEach((it, index) => {
+      if (
+        usedIndex.indexOf(index) < 0 &&
+        networkIds.indexOf(it.value.network) >= 0
+      ) {
+        initValue.push(it);
+      }
+    });
+    this.updateContext({
+      networks: initValue,
+    });
+  }
+
+  async getSecurityGroups() {
+    await this.securityGroupStore.fetchList();
+
+    const {
+      context: { securityGroup },
+    } = this.props;
+
+    if (
+      !securityGroup ||
+      (!securityGroup?.selectedRowKeys?.length &&
+        !securityGroup.selectedRows?.length)
+    )
+      this.updateContext({
+        securityGroup: this.defaultSecurityGroup,
+      });
   }
 
   async getVolumeTypes() {
     if (this.enableCinder) {
       await this.volumeTypeStore.fetchList();
+
+      const {
+        context: { systemDisk },
+      } = this.props;
+
+      if (!systemDisk?.type && this.volumeTypes.length) {
+        this.updateFormValue('systemDisk', this.defaultVolumeType);
+      }
+    }
+  }
+
+  async getKeypairs() {
+    await this.keyPairStore.fetchList();
+
+    const {
+      context: { keypair, name, loginType },
+    } = this.props;
+
+    if (
+      !keypair ||
+      (!keypair.selectedRowKeys?.length && !keypair.selectedRows?.length)
+    ) {
+      this.updateContext({
+        keypair: this.defaultKeyPair,
+        physicalNodeType: physicalNodeTypes[0],
+      });
+    }
+
+    if (!name) {
+      this.updateContext({
+        name: `${this.currentProjectName}-instance`,
+      });
+    }
+
+    if (!loginType) {
+      this.updateContext({
+        loginType: {
+          label: 'Keypair',
+          value: 'keypair',
+          disabled: false,
+        },
+      });
     }
   }
 
@@ -726,6 +1006,14 @@ export class BaseStep extends Base {
             name: 'name',
           },
         ],
+        initValue: {
+          selectedRowKeys: this.defaultImage?.selectedRowKeys?.length
+            ? this.defaultImage.selectedRowKeys
+            : undefined,
+          selectedRows: this.defaultImage?.selectedRows?.length
+            ? this.defaultImage.selectedRows
+            : undefined,
+        },
         columns: this.imageColumns,
         tabs: this.systemTabs,
         defaultTabValue:

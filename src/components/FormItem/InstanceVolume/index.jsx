@@ -57,10 +57,6 @@ export default class InstanceVolume extends React.Component {
     return null;
   }
 
-  componentDidMount() {
-    this.onChange();
-  }
-
   checkVolume = (callback) => {
     const { type } = this.state;
     if (!type) {
