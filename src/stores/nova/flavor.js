@@ -74,7 +74,7 @@ export class FlavorStore extends Base {
         ...rest,
         ...extraRest,
         architecture: extraRest[':architecture'] || 'custom',
-        category: extraRest[':category'],
+        category: extraRest[':category'] || this.setCategory(data.name),
         ...gpuInfo,
         is_public: rest['os-flavor-access:is_public'],
         originData: data,
@@ -104,6 +104,14 @@ export class FlavorStore extends Base {
       ? items.filter((it) => it.architecture === tab)
       : items;
     return newItems;
+  }
+
+  setCategory(name) {
+    const prefix = name.replace(/\.[^.]*$/, '');
+
+    if (prefix === 't1') return 'general_purpose';
+    if (prefix === 'c1') return 'compute_optimized';
+    return 'memory_optimized';
   }
 
   @action

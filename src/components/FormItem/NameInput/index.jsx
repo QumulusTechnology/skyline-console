@@ -147,6 +147,11 @@ export default class index extends Component {
     return nameMessage;
   }
 
+  onChange = (value) => {
+    const { onChange } = this.props;
+    onChange && onChange(value);
+  };
+
   render() {
     const { componentProps, formItemProps } = this.props;
     const {
@@ -204,7 +209,7 @@ export default class index extends Component {
     };
     return (
       <Form.Item {...newFormItemProps}>
-        <Input {...props} />
+        <Input onChange={this.onChange} {...props} />
       </Form.Item>
     );
   }

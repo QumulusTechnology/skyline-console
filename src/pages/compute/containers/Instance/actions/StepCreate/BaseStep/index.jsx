@@ -105,7 +105,7 @@ export class BaseStep extends Base {
       },
     };
     if (source.value === 'image') {
-      values.bootFromVolume = true;
+      values.bootFromVolume = false;
     }
     return values;
   }
@@ -263,9 +263,11 @@ export class BaseStep extends Base {
       tab: '',
     };
 
-    if (this.securityGroups.length) {
-      data.selectedRows = [this.securityGroups[0]];
-      data.selectedRowKeys = [this.securityGroups[0].id];
+    const defaultSG = this.securityGroups.find((it) => it.name === 'default');
+
+    if (defaultSG) {
+      data.selectedRows = [defaultSG];
+      data.selectedRowKeys = [defaultSG.id];
     }
 
     return data;
@@ -471,7 +473,7 @@ export class BaseStep extends Base {
     await this.keyPairStore.fetchList();
 
     const {
-      context: { keypair, name, loginType },
+      context: { keypair, loginType },
     } = this.props;
 
     if (
@@ -481,12 +483,6 @@ export class BaseStep extends Base {
       this.updateContext({
         keypair: this.defaultKeyPair,
         physicalNodeType: physicalNodeTypes[0],
-      });
-    }
-
-    if (!name) {
-      this.updateContext({
-        name: `${this.currentProjectName}-instance`,
       });
     }
 
@@ -728,6 +724,12 @@ export class BaseStep extends Base {
     });
   };
 
+  onChangeName = (event) => {
+    this.updateContext({
+      name: event.target.value,
+    });
+  };
+
   getInstanceSnapshotDisk = () => {
     const { instanceSnapshotDisk } = this.state;
     const { instanceSnapshotDisk: oldDisk } = this.props.context;
@@ -931,6 +933,10 @@ export class BaseStep extends Base {
     return !bootFromVolume;
   }
 
+  get disableAvailableZone() {
+    return this.availableZones.length === 1;
+  }
+
   getFlavorComponent() {
     return <FlavorSelectTable onChange={this.onFlavorChange} />;
   }
@@ -947,6 +953,17 @@ export class BaseStep extends Base {
         type: 'label',
       },
       {
+        type: 'divider',
+      },
+      {
+        name: 'name',
+        label: t('Name'),
+        type: 'input-name',
+        required: true,
+        isInstance: true,
+        onChange: this.onChangeName,
+      },
+      {
         name: 'availableZone',
         label: t('Available Zone'),
         type: 'select',
@@ -957,6 +974,7 @@ export class BaseStep extends Base {
         tip: t(
           'Availability zone refers to a physical area where power and network are independent of each other in the same area. In the same region, the availability zone and the availability zone can communicate with each other in the intranet, and the available zones can achieve fault isolation.'
         ),
+        disabled: this.disableAvailableZone,
       },
       {
         type: 'divider',

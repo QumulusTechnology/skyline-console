@@ -28,7 +28,7 @@ import {
   categoryHasEphemeral,
   isBareMetalFlavor,
   isBareMetal,
-  getFlavorArchInfo,
+  isHeteroGenous,
   getFlavorSearchFilters,
 } from 'resources/nova/flavor';
 import styles from './index.less';
@@ -82,8 +82,10 @@ export class FlavorSelectTable extends Component {
       data.selectedRowKeys = selectedRowKeys;
       data.selectedRows = selectedRows;
     } else if (this.flavors.length) {
-      data.selectedRows = [this.flavors[0]];
-      data.selectedRowKeys = [this.flavors[0].id];
+      const dFlavor = this.flavors.find((it) => it.name === 't1.medium');
+
+      data.selectedRows = [dFlavor] || undefined;
+      data.selectedRowKeys = [dFlavor.id] || undefined;
     }
 
     return data;
@@ -108,7 +110,7 @@ export class FlavorSelectTable extends Component {
           if (filterIronic) {
             return isIronic
               ? isBareMetal(architecture)
-              : !isBareMetal(architecture);
+              : !isBareMetal(architecture) && !isHeteroGenous(architecture);
           }
           return true;
         }
@@ -142,7 +144,7 @@ export class FlavorSelectTable extends Component {
       return [];
     }
 
-    return (this.flavorStore.list.data || [])
+    const dataFlavors = (this.flavorStore.list.data || [])
       .filter((it) => {
         if (excludeFlavors.length > 0) {
           return excludeFlavors.indexOf(it.id) < 0;
@@ -165,15 +167,18 @@ export class FlavorSelectTable extends Component {
         if (arch === 'all') {
           return true;
         }
-        if (arch === 'custom') {
-          return it.architecture === arch;
-        }
-        return it.architecture === arch && it.category === category;
+
+        return it.category === category;
       })
       .map((it) => ({
         ...it,
         key: it.id,
-      }));
+      }))
+      .sort((a, b) => {
+        return a.ram - b.ram || a.vcpus - b.vcpus;
+      });
+
+    return dataFlavors;
   }
 
   getBaseColumns() {
@@ -187,22 +192,13 @@ export class FlavorSelectTable extends Component {
     if (!categoryHasEphemeral(category)) {
       base = base.filter((it) => it.dataIndex !== 'OS-FLV-EXT-DATA:ephemeral');
     }
-    if (arch === 'all') {
-      base = [
-        ...base,
-        {
-          title: t('Architecture'),
-          dataIndex: 'id',
-          render: (value, record) => getFlavorArchInfo(record),
-        },
-      ];
-    }
-    if (arch === 'x86_architecture') {
+    if (arch === 'x86_architecture' || arch === 'all') {
       base = base.filter(
         (it) =>
           it.dataIndex !== 'quota:vif_outbound_average' &&
           it.dataIndex !== 'OS-FLV-EXT-DATA:ephemeral' &&
-          it.dataIndex !== 'quota:disk_total_iops_sec'
+          it.dataIndex !== 'quota:disk_total_iops_sec' &&
+          it.dataIndex !== 'quota:vif_outbound_average'
       );
     }
     return base;
@@ -230,8 +226,11 @@ export class FlavorSelectTable extends Component {
   }
 
   onArchChange = (e) => {
+    const { value } = e.target;
+
     this.setState({
-      arch: e.target.value,
+      arch: value,
+      category: value === 'x86_architecture' ? 'general_purpose' : undefined,
     });
   };
 
