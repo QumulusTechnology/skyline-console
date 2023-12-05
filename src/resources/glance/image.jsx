@@ -59,13 +59,13 @@ export const imageUsage = {
 };
 
 export const imageFormatsConsole = {
-  raw: t('RAW - Raw disk image format'),
+  raw: t('RAW'),
   qcow2: t('QCOW2 - QEMU image format'),
   iso: t('ISO - Optical disc image format'),
 };
 
 export const volumeCreateImageTypes = {
-  raw: t('RAW - Raw disk image format'),
+  raw: t('RAW'),
   qcow2: t('QCOW2 - QEMU image format'),
 };
 

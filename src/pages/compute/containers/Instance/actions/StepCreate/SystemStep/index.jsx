@@ -232,13 +232,6 @@ export class SystemStep extends Base {
 
     return [
       {
-        name: 'name',
-        label: t('Name'),
-        type: 'input-name',
-        required: true,
-        isInstance: true,
-      },
-      {
         name: 'loginType',
         label: t('Login Type'),
         type: 'radio',

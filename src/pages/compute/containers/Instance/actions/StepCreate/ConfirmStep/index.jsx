@@ -211,10 +211,10 @@ export class ConfirmStep extends Base {
   get formItems() {
     const { context } = this.props;
     let baseItems = [
-      // {
-      //   label: t('Resource Pool'),
-      //   value: context.resource,
-      // },
+      {
+        label: t('Name'),
+        value: context.name,
+      },
       {
         label: t('Start Source'),
         value: context.source.label,
@@ -316,10 +316,6 @@ export class ConfirmStep extends Base {
           this.goStep(2);
         },
         items: [
-          {
-            label: t('Name'),
-            value: context.name,
-          },
           {
             label: t('Login Type'),
             value: this.getLoginType(),

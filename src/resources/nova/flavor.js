@@ -265,6 +265,9 @@ export const getFamilyItemValue = (data) => {
 
 export const isBareMetal = (architecture) => architecture === 'bare_metal';
 
+export const isHeteroGenous = (architecture) =>
+  architecture === 'heterogeneous_computing';
+
 export const isBareMetalFlavor = (data) => {
   const { extra_specs: extra = {} } = data.originData || data || {};
   return (
