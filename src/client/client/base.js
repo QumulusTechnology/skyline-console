@@ -191,6 +191,10 @@ export default class BaseClient {
           conf
         );
       },
+      osServerPassword: (id) =>
+        this.request.get(
+          `${this.getDetailUrl(resourceName, id)}/os-server-password`
+        ),
       create: (data, ...args) => this.request.post(listUrl, data, ...args),
       update: (id, data, ...args) =>
         this.request.put(this.getDetailUrl(resourceName, id), data, ...args),
