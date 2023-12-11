@@ -48,6 +48,7 @@ import DeleteIronic from './DeleteIronic';
 import ConfirmResize from './ConfirmResize';
 import RevertResize from './RevertResize';
 import ModifyTags from './ModifyTags';
+import RetrievePassword from './RetrievePassword';
 
 const statusActions = [
   StartAction,
@@ -79,6 +80,7 @@ const configActions = [
   RevertResize,
   Resize,
   ChangePassword,
+  RetrievePassword,
   Rebuild,
 ];
 

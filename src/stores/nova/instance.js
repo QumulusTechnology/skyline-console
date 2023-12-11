@@ -370,6 +370,11 @@ export class ServerStore extends Base {
   }
 
   @action
+  async decryptPassword(id) {
+    return this.client.osServerPassword(id);
+  }
+
+  @action
   async createImage({ id, image }) {
     const body = {
       createImage: {
