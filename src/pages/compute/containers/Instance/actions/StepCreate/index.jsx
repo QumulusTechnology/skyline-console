@@ -364,7 +364,6 @@ export class StepCreate extends StepAction {
       const { label } = systemDisk.typeOption || {};
       newCountMap[label] = !newCountMap[label] ? 1 : newCountMap[label] + 1;
       newSizeMap[label] = !newSizeMap[label] ? size : newSizeMap[label] + size;
-      totalNewCount += 1 * count;
       totalNewSize += size * count;
     }
     if (
