@@ -17,6 +17,7 @@ import JSEncrypt from 'jsencrypt';
 import { ModalAction } from 'containers/Action';
 import globalServerStore from 'stores/nova/instance';
 import globalKeyPairStore from 'stores/nova/keypair';
+// import styles from '../index.less';
 
 export class RetrievePassword extends ModalAction {
   static id = 'retrieve-password';
@@ -85,16 +86,24 @@ export class RetrievePassword extends ModalAction {
         name: 'keypairName',
         label: t('Key Pair Name'),
         type: 'input',
-        readOnly: true,
+        disabled: true,
         tip: t('The Key Pair name that was associated with the instance.'),
+        style: {
+          cursor: 'text',
+          color: '#6e6e6e',
+        },
       },
       {
         name: 'encryptedPassword',
         label: t('Encrypted Password'),
         type: 'textarea',
         tip: t('The instance password encrypted with your public key.'),
-        readOnly: true,
+        disabled: true,
         rows: 4,
+        style: {
+          cursor: 'text',
+          color: '#6e6e6e',
+        },
       },
       {
         name: 'privateKey',
@@ -110,13 +119,20 @@ export class RetrievePassword extends ModalAction {
           'To decrypt your password you will need the private key of your key pair for this instance. Select the private key file, or copy and paste the content of your private key file into the text.'
         ),
         rows: 5,
+        uploadText: t('Load from Private Key File'),
       },
       {
         name: 'password',
         label: t('Password'),
         type: 'input',
-        readOnly: true,
+        disabled: true,
         hidden: this.hidePasswordKeySource,
+        style: {
+          fontFamily: 'monospace',
+          fontSize: '16px',
+          cursor: 'text',
+          color: '#6e6e6e',
+        },
       },
     ];
   }

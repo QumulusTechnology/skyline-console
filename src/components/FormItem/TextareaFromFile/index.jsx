@@ -23,6 +23,7 @@ export default class index extends Component {
     placeholder: PropTypes.string,
     accept: PropTypes.any,
     onChange: PropTypes.func,
+    uploadText: PropTypes.string,
   };
 
   static defaultProps = {
@@ -33,6 +34,7 @@ export default class index extends Component {
       // eslint-disable-next-line no-console
       console.log(values);
     },
+    uploadText: t('Load from local files'),
   };
 
   onChange = (value) => {
@@ -51,7 +53,7 @@ export default class index extends Component {
   };
 
   render() {
-    const { value, placeholder, accept, ...rest } = this.props;
+    const { value, placeholder, accept, uploadText, ...rest } = this.props;
     return (
       <>
         <Input.TextArea
@@ -69,7 +71,7 @@ export default class index extends Component {
           showUploadList={false}
           accept={accept}
         >
-          <Button type="link">{t('Load from local files')}</Button>
+          <Button type="link">{uploadText}</Button>
         </Upload>
       </>
     );
