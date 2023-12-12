@@ -80,7 +80,6 @@ const configActions = [
   RevertResize,
   Resize,
   ChangePassword,
-  RetrievePassword,
   Rebuild,
 ];
 
@@ -133,6 +132,9 @@ const actionConfigs = {
       },
       {
         action: ModifyTags,
+      },
+      {
+        action: RetrievePassword,
       },
     ],
   },
