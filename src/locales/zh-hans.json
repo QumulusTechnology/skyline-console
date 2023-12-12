@@ -1442,6 +1442,7 @@
   "Load Balancer Name": "负载均衡名称",
   "Load Balancers": "负载均衡",
   "Load Template from a file": "从文件加载模板",
+  "Load from Private Key File": "",
   "Load from local files": "从本地文件读取",
   "LoadBalancers Instances": "负载均衡",
   "Local": "本端",

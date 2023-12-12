@@ -1442,6 +1442,7 @@
   "Load Balancer Name": "로드 밸런서 이름",
   "Load Balancers": "로드 밸런서",
   "Load Template from a file": "파일에서 템플릿 불러오기",
+  "Load from Private Key File": "",
   "Load from local files": "로컬 파일에서 불러오기",
   "LoadBalancers Instances": "LoadBalancers 인스턴스",
   "Local": "로컬",
