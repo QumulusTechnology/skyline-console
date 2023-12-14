@@ -262,7 +262,6 @@ export class StepCreate extends StepAction {
       flavor,
       image,
       keypair,
-      loginType,
       name,
       networkSelect,
       networkSelectRows,
@@ -750,8 +749,6 @@ export class StepCreate extends StepAction {
     const {
       availableZone,
       keypair,
-      loginType,
-      password,
       physicalNode,
       physicalNodeType,
       securityGroup,
@@ -776,17 +773,13 @@ export class StepCreate extends StepAction {
       flavorRef: flavor.selectedRowKeys[0],
       availability_zone: availableZone.value,
       networks,
+      key_name: keypair.selectedRowKeys[0],
     };
     if (this.enableCinder) {
       server.block_device_mapping_v2 = volumes;
     }
     if (imageRef && (!volumes || !bootFromVolume)) {
       server.imageRef = imageRef;
-    }
-    if (loginType.value === 'keypair') {
-      server.key_name = keypair.selectedRowKeys[0];
-    } else {
-      server.adminPass = password;
     }
     if (count > 1) {
       server.min_count = count;
