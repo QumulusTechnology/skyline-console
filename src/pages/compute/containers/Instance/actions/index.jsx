@@ -18,7 +18,6 @@ import CreateSnapshot from './CreateSnapshot';
 import AttachInterface from './AttachInterface';
 import StepCreateAction from './StepCreate';
 import CreateIronic from './CreateIronic';
-import ChangePassword from './ChangePassword';
 import StartAction from './Start';
 import StopAction from './Stop';
 import DetachInterface from './DetachInterface';
@@ -75,13 +74,7 @@ const resourceActions = [
   ManageSecurityGroup,
 ];
 
-const configActions = [
-  ConfirmResize,
-  RevertResize,
-  Resize,
-  ChangePassword,
-  Rebuild,
-];
+const configActions = [ConfirmResize, RevertResize, Resize, Rebuild];
 
 const batchActions = [
   StartAction,

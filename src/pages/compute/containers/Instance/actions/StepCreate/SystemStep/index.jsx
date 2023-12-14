@@ -19,7 +19,7 @@ import globalHypervisorStore from 'stores/nova/hypervisor';
 import globalServerGroupStore from 'stores/nova/server-group';
 import policyType from 'resources/nova/server-group';
 import Base from 'components/Form';
-import { getPasswordOtherRule, asciiValidator } from 'utils/validate';
+import { asciiValidator } from 'utils/validate';
 import {
   hypervisorColumns,
   hypervisorFilters,
@@ -139,11 +139,7 @@ export class SystemStep extends Base {
 
   get defaultValue() {
     const { servergroup } = this.locationParams;
-    const { context = {} } = this.props;
     const data = {
-      loginType:
-        context.loginType ||
-        (this.isWindowsImage ? this.loginTypes[1] : this.loginTypes[0]),
       more: false,
       physicalNodeType: physicalNodeTypes[0],
       userData: '',
@@ -159,20 +155,6 @@ export class SystemStep extends Base {
       data.name = name;
     }
     return data;
-  }
-
-  get loginTypes() {
-    return [
-      {
-        label: t('Keypair'),
-        value: 'keypair',
-        disabled: this.isWindowsImage,
-      },
-      {
-        label: t('Password'),
-        value: 'password',
-      },
-    ];
   }
 
   allowed = () => Promise.resolve();
@@ -197,7 +179,6 @@ export class SystemStep extends Base {
   get nameForStateUpdate() {
     return [
       'name',
-      'loginType',
       'password',
       'confirmPassword',
       'more',
@@ -224,20 +205,12 @@ export class SystemStep extends Base {
   };
 
   get formItems() {
-    const { loginType, more = false, physicalNodeType } = this.state;
-    const isPassword = loginType === this.loginTypes[1].value;
+    const { more = false, physicalNodeType } = this.state;
     const isManually = physicalNodeType === physicalNodeTypes[1].value;
 
     const { initKeyPair } = this.state;
 
     return [
-      {
-        name: 'loginType',
-        label: t('Login Type'),
-        type: 'radio',
-        options: this.loginTypes,
-        isWrappedValue: true,
-      },
       {
         name: 'username',
         label: t('Login Name'),
@@ -257,8 +230,7 @@ export class SystemStep extends Base {
         type: 'select-table',
         data: this.keypairs,
         isLoading: this.keyPairStore.list.isLoading,
-        required: !isPassword,
-        hidden: isPassword,
+        required: true,
         header: getKeyPairHeader(this),
         initValue: initKeyPair,
         tip: t(
@@ -281,22 +253,6 @@ export class SystemStep extends Base {
           },
         ],
         selectedLabel: t('Keypair'),
-      },
-      {
-        name: 'password',
-        label: t('Login Password'),
-        type: 'input-password',
-        required: isPassword,
-        hidden: !isPassword,
-        otherRule: getPasswordOtherRule('password', 'instance'),
-      },
-      {
-        name: 'confirmPassword',
-        label: t('Confirm Password'),
-        type: 'input-password',
-        required: isPassword,
-        hidden: !isPassword,
-        otherRule: getPasswordOtherRule('confirmPassword', 'instance'),
       },
       {
         type: 'divider',
