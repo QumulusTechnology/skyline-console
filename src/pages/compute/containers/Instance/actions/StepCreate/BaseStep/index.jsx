@@ -230,10 +230,11 @@ export class BaseStep extends Base {
         (it) => it.name === 'Ubuntu-22.04-Jammy'
       );
 
-      if (defaultImg) data.selectedRowKeys = [defaultImg.key];
-      data.selectedRows = [defaultImg];
+      if (defaultImg) {
+        data.selectedRowKeys = [defaultImg.key];
+        data.selectedRows = [defaultImg];
+      }
     }
-
     return data;
   }
 
@@ -628,6 +629,12 @@ export class BaseStep extends Base {
   onFlavorChange = (value) => {
     this.updateContext({
       flavor: value,
+    });
+  };
+
+  onOsImageChange = (value) => {
+    this.updateContext({
+      image: value,
     });
   };
 
@@ -1038,6 +1045,7 @@ export class BaseStep extends Base {
           this.locationParams.os_distro || this.systemTabs[0].value,
         selectedLabel: t('Image'),
         onTabChange: this.onImageTabChange,
+        onChange: (value) => this.onOsImageChange(value),
       },
       {
         name: 'instanceSnapshot',

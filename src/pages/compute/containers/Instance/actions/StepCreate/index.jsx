@@ -274,25 +274,25 @@ export class StepCreate extends StepAction {
 
     return (
       !flavor ||
-      !flavor.selectedRowKeys.length ||
-      !flavor.selectedRows.length ||
+      !flavor?.selectedRowKeys?.length ||
+      !flavor?.selectedRows?.length ||
       !image ||
-      !image.selectedRowKeys.length ||
-      !image.selectedRows.length ||
+      !image?.selectedRowKeys?.length ||
+      !image?.selectedRows?.length ||
       !keypair ||
-      !keypair.selectedRowKeys.length ||
-      !keypair.selectedRows.length ||
+      !keypair?.selectedRowKeys?.length ||
+      !keypair?.selectedRows?.length ||
       !loginType ||
       !name ||
       !networkSelect ||
-      !networkSelect.selectedRowKeys.length ||
-      !networkSelect.selectedRows.length ||
+      !networkSelect?.selectedRowKeys?.length ||
+      !networkSelect?.selectedRows?.length ||
       !networkSelectRows?.length ||
       !networks?.length ||
       !physicalNodeType ||
       !securityGroup ||
-      !securityGroup.selectedRowKeys.length ||
-      !securityGroup.selectedRows.length ||
+      !securityGroup?.selectedRowKeys?.length ||
+      !securityGroup?.selectedRows?.length ||
       !source ||
       !!this.errorMsg
     );
