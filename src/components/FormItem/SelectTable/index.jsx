@@ -681,6 +681,7 @@ export default class SelectTable extends React.Component {
       filterParams,
       onRow,
       rowKey,
+      rowClassName,
       childrenColumnName,
     } = this.props;
     const { current, pageSize, total, filters } = this.state;
@@ -714,6 +715,7 @@ export default class SelectTable extends React.Component {
         )}
         rowSelection={this.rowSelection}
         rowKey={rowKey}
+        rowClassName={rowClassName}
         columns={this.tableColumns}
         data={data}
         filters={filters}
