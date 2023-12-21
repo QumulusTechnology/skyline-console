@@ -658,10 +658,12 @@ export class BaseStep extends Base {
     });
   };
 
-  onOSImageChange = () => {
-    this.updateContext({
-      image: value,
-    });
+  onOSImageChange = (value) => {
+    if (value) {
+      this.updateContext({
+        image: value,
+      });
+    }
 
     this.updateContext({
       flavor: undefined,
@@ -1088,7 +1090,7 @@ export class BaseStep extends Base {
           this.locationParams.os_distro || this.systemTabs[0].value,
         selectedLabel: t('Image'),
         onTabChange: this.onImageTabChange,
-        onChange: (value) => this.onOsImageChange(value),
+        onChange: (value) => this.onOSImageChange(value),
       },
       {
         name: 'instanceSnapshot',
