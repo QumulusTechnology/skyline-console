@@ -276,8 +276,14 @@ export default class SimpleTable extends React.Component {
   };
 
   render() {
-    const { className, isLoading, rowSelection, footer, childrenColumnName } =
-      this.props;
+    const {
+      className,
+      isLoading,
+      rowSelection,
+      footer,
+      childrenColumnName,
+      rowClassName,
+    } = this.props;
 
     const currentColumns = this.getColumns();
     const dataSource = this.getDataSource();
@@ -294,6 +300,7 @@ export default class SimpleTable extends React.Component {
         showSorterTooltip={false}
         footer={footer}
         onRow={this.onRow}
+        rowClassName={rowClassName}
         childrenColumnName={childrenColumnName}
       />
     );

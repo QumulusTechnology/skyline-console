@@ -22,7 +22,7 @@ import globalFlavorStore from 'stores/nova/flavor';
 import {
   flavorArchitectures,
   flavorCategoryList,
-  getBaseColumns,
+  getMinBaseColumns,
   gpuColumns,
   categoryHasIOPS,
   categoryHasEphemeral,
@@ -84,8 +84,10 @@ export class FlavorSelectTable extends Component {
     } else if (this.flavors.length) {
       const dFlavor = this.flavors.find((it) => it.name === 't1.medium');
 
-      data.selectedRows = [dFlavor] || undefined;
-      data.selectedRowKeys = [dFlavor.id] || undefined;
+      if (dFlavor) {
+        data.selectedRows = [dFlavor] || undefined;
+        data.selectedRowKeys = [dFlavor.id] || undefined;
+      }
     }
 
     return data;
@@ -183,7 +185,10 @@ export class FlavorSelectTable extends Component {
 
   getBaseColumns() {
     const { category, arch } = this.state;
-    let base = [...getBaseColumns()];
+    const {
+      minSize: { imageSize, ramSize },
+    } = this.props;
+    let base = [...getMinBaseColumns(ramSize, imageSize)];
     base[0].title = t('Name');
     base.splice(1, 1);
     if (!categoryHasIOPS(category)) {
@@ -244,6 +249,13 @@ export class FlavorSelectTable extends Component {
     const { onChange } = this.props;
     onChange && onChange(value);
   };
+
+  disableRow(rec, minSize) {
+    return rec.disk < minSize.imageSize ||
+      Math.ceil(rec.ram / 1024) < minSize.ramSize
+      ? styles['bg-disable']
+      : '';
+  }
 
   initDefaultValue() {
     const { value: { selectedRowKeys = [] } = {} } = this.props;
@@ -337,7 +349,7 @@ export class FlavorSelectTable extends Component {
 
   renderCategorySelect() {
     const { arch } = this.state;
-    if (arch === 'custom' || arch === 'all') {
+    if (arch === 'all') {
       return null;
     }
     return (
@@ -358,7 +370,7 @@ export class FlavorSelectTable extends Component {
   }
 
   render() {
-    const { value, disabledFunc } = this.props;
+    const { value, disabledFunc, minSize } = this.props;
     const isLoading =
       this.settingStore.list.isLoading && this.flavorStore.list.isLoading;
     const props = {
@@ -369,6 +381,7 @@ export class FlavorSelectTable extends Component {
       filterParams: getFlavorSearchFilters(),
       value,
       initValue: this.defaultFlavor,
+      rowClassName: (rec) => this.disableRow(rec, minSize),
       onChange: this.onChange,
       disabledFunc,
     };

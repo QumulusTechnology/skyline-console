@@ -2525,6 +2525,8 @@
   "The security group is similar to the firewall function and is used to set up network access control. ": "",
   "The security group is similar to the firewall function for setting up network access control, or you can go to the console and create a new security group. (Note: The security group you selected will work on all virtual LANS on the instances.)": "",
   "The selected VPC/ subnet does not have IPv6 enabled.": "",
+  "The selected image source requires a flavor with at least {diskSize} GB of root disk. Select a flavor with a larger root disk or use a different image source.": "",
+  "The selected image source requires a flavor with at least {ramSize} MB of RAM. Select a flavor with more RAM or use a different image source.": "",
   "The selected network has no subnet": "",
   "The selected project is different from the project to which the network belongs. That is, the subnet to be created is not under the same project as the network. Please do not continue unless you are quit sure what you are doing.": "",
   "The session has expired, please log in again.": "",

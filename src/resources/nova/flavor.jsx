@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import React from 'react';
 import { formatSize, getOptions } from 'utils';
+import { Tooltip } from 'antd';
+import { WarningOutlined } from '@ant-design/icons';
 
 export const cpuPolicyList = {
   dedicated: t('Dedicated'),
@@ -185,6 +188,66 @@ export const getBaseColumns = (self) => [
       }
       return value;
     },
+  },
+];
+
+export const getMinBaseColumns = (minRamSize, minRDSize) => [
+  {
+    title: t('ID/Name'),
+    dataIndex: 'name',
+  },
+  {
+    title: t('Category'),
+    dataIndex: 'category',
+    valueMap: flavorCategoryList,
+  },
+  {
+    title: t('CPU'),
+    dataIndex: 'vcpus',
+    isHideable: true,
+  },
+  {
+    title: t('Memory'),
+    dataIndex: 'ram',
+    isHideable: true,
+    render: (ram) =>
+      minRamSize && minRamSize > Math.ceil(ram / 1024) ? (
+        <>
+          <Tooltip
+            title={t(
+              'The selected image source requires a flavor with at least {ramSize} MB of RAM. Select a flavor with more RAM or use a different image source.',
+              { ramSize: minRamSize * 1024 }
+            )}
+          >
+            <WarningOutlined style={{ color: '#f0ad4e' }} />
+            &nbsp;
+          </Tooltip>
+          {formatSize(ram, 2)}
+        </>
+      ) : (
+        formatSize(ram, 2)
+      ),
+  },
+  {
+    title: t('Root Disk'),
+    dataIndex: 'disk',
+    render: (diskSize) =>
+      minRDSize && minRDSize > diskSize ? (
+        <>
+          <Tooltip
+            title={t(
+              'The selected image source requires a flavor with at least {diskSize} GB of root disk. Select a flavor with a larger root disk or use a different image source.',
+              { diskSize: minRDSize }
+            )}
+          >
+            <WarningOutlined style={{ color: '#f0ad4e' }} />
+            &nbsp;
+          </Tooltip>
+          {formatSize(diskSize, 3)}
+        </>
+      ) : (
+        formatSize(diskSize, 3)
+      ),
   },
 ];
 

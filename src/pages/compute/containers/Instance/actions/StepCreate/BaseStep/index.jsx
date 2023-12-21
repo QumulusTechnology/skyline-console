@@ -103,10 +103,8 @@ export class BaseStep extends Base {
         selectedRows: undefined,
         tab: 'all',
       },
+      bootFromVolume: false,
     };
-    if (source.value === 'image') {
-      values.bootFromVolume = false;
-    }
     return values;
   }
 
@@ -218,13 +216,11 @@ export class BaseStep extends Base {
       tab: 'ubuntu',
     };
 
-    const {
-      context: { image },
-    } = this.props;
+    const { image } = this.state;
 
     if (image) {
-      data.selectedRowKeys = image.selectedRowKeys;
-      data.selectedRows = image.selectedRows;
+      data.selectedRowKeys = [image.key];
+      data.selectedRows = [image];
     } else if (this.images.length) {
       const defaultImg = this.images.find(
         (it) => it.name === 'Ubuntu-22.04-Jammy'
@@ -590,6 +586,36 @@ export class BaseStep extends Base {
     return Math.max(flavorSize, 1);
   }
 
+  getFlavorMinSize() {
+    const { ram, disk } = this.state.flavor || {};
+
+    let imageSize = disk || 1;
+    let ramSize = Math.max(Math.ceil(ram / 1024), 1) || 1;
+
+    if (this.sourceTypeIsImage) {
+      const { min_disk = 0, size = 0, min_ram = 0 } = this.state.image || {};
+      const sizeGiB = Math.ceil(size / 1024 / 1024 / 1024);
+
+      imageSize = Math.max(min_disk, sizeGiB, 1);
+      ramSize = Math.max(Math.ceil(min_ram / 1024), 1);
+    }
+    if (this.sourceTypeIsSnapshot) {
+      const { instanceSnapshot } = this.state;
+
+      imageSize = instanceSnapshot?.min_disk || 1;
+      ramSize = Math.max(Math.ceil(instanceSnapshot?.min_ram / 1024), 1) || 1;
+    }
+    if (this.sourceTypeIsVolume) {
+      imageSize = 0;
+      ramSize = 0;
+    }
+
+    return {
+      imageSize,
+      ramSize,
+    };
+  }
+
   get sourceTypeIsImage() {
     const { source } = this.state;
     return source === this.imageSourceType.value;
@@ -632,10 +658,20 @@ export class BaseStep extends Base {
     });
   };
 
-  onOsImageChange = (value) => {
+  onOSImageChange = () => {
     this.updateContext({
       image: value,
     });
+
+    this.updateContext({
+      flavor: undefined,
+    });
+
+    this.setState({
+      flavor: undefined,
+    });
+
+    this.updateFormValue('flavor', undefined);
   };
 
   onChangeBootFromVolume = (value) => {
@@ -651,6 +687,9 @@ export class BaseStep extends Base {
 
   onInstanceSnapshotChange = async (value) => {
     const { min_disk, size, id } = value.selectedRows[0] || {};
+
+    this.onOSImageChange();
+
     if (!id) {
       this.updateContext({
         instanceSnapshotDisk: null,
@@ -711,6 +750,8 @@ export class BaseStep extends Base {
     this.updateContext({
       bootableVolume: value,
     });
+
+    this.onOSImageChange();
   };
 
   onSystemDiskChange = (value) => {
@@ -799,6 +840,11 @@ export class BaseStep extends Base {
       </>
     );
   };
+
+  disableFlavorRow(record) {
+    const { imageSize, ramSize } = this.getFlavorMinSize();
+    return record.disk < imageSize || Math.ceil(record.ram / 1024) < ramSize;
+  }
 
   get imageColumns() {
     return getImageColumns(this);
@@ -916,7 +962,7 @@ export class BaseStep extends Base {
       return true;
     }
     // support non-bfv and bootFromVolume = true
-    const { bootFromVolume = true } = this.state;
+    const { bootFromVolume } = this.state;
     return !!bootFromVolume;
   }
 
@@ -930,13 +976,10 @@ export class BaseStep extends Base {
   }
 
   get hideDataDisk() {
-    if (!this.supportNoBootFromVolume) {
-      return false;
+    if (!this.sourceTypeIsImage) {
+      return true;
     }
-    if (this.sourceTypeIsVolume) {
-      return false;
-    }
-    const { bootFromVolume = true } = this.state;
+    const { bootFromVolume } = this.state;
     return !bootFromVolume;
   }
 
@@ -945,7 +988,26 @@ export class BaseStep extends Base {
   }
 
   getFlavorComponent() {
-    return <FlavorSelectTable onChange={this.onFlavorChange} />;
+    const { image, instanceSnapshot, bootableVolume } = this.state;
+
+    let key;
+
+    if (this.sourceTypeIsImage) {
+      key = image?.id || 0;
+    } else if (this.sourceTypeIsSnapshot) {
+      key = toJS(instanceSnapshot?.id) || 0;
+    } else if (this.sourceTypeIsVolume) {
+      key = bootableVolume?.id || 0;
+    }
+
+    return (
+      <FlavorSelectTable
+        key={key}
+        minSize={this.getFlavorMinSize()}
+        disabledFunc={(record) => this.disableFlavorRow(record)}
+        onChange={this.onFlavorChange}
+      />
+    );
   }
 
   get formItems() {
@@ -987,21 +1049,6 @@ export class BaseStep extends Base {
         type: 'divider',
       },
       {
-        name: 'flavor',
-        label: t('Specification'),
-        type: 'select-table',
-        component: this.getFlavorComponent(),
-        required: true,
-        wrapperCol: {
-          xs: {
-            span: 24,
-          },
-          sm: {
-            span: 18,
-          },
-        },
-      },
-      {
         name: 'source',
         label: t('Start Source'),
         type: 'radio',
@@ -1032,12 +1079,8 @@ export class BaseStep extends Base {
           },
         ],
         initValue: {
-          selectedRowKeys: this.defaultImage?.selectedRowKeys?.length
-            ? this.defaultImage.selectedRowKeys
-            : undefined,
-          selectedRows: this.defaultImage?.selectedRows?.length
-            ? this.defaultImage.selectedRows
-            : undefined,
+          selectedRows: this.defaultImage.selectedRows,
+          selectedRowKeys: this.defaultImage.selectedRowKeys,
         },
         columns: this.imageColumns,
         tabs: this.systemTabs,
@@ -1082,9 +1125,6 @@ export class BaseStep extends Base {
           },
         ],
         columns: this.volumeColumns,
-      },
-      {
-        type: 'divider',
       },
       {
         name: 'bootFromVolume',
@@ -1150,6 +1190,24 @@ export class BaseStep extends Base {
         ),
         onChange: this.onDataDiskChange,
         display: this.enableCinder,
+      },
+      {
+        type: 'divider',
+      },
+      {
+        name: 'flavor',
+        label: t('Specification'),
+        type: 'select-table',
+        component: this.getFlavorComponent(),
+        required: true,
+        wrapperCol: {
+          xs: {
+            span: 24,
+          },
+          sm: {
+            span: 18,
+          },
+        },
       },
     ];
   }

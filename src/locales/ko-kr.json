@@ -2525,6 +2525,8 @@
   "The security group is similar to the firewall function and is used to set up network access control. ": "security group은 방화벽 기능과 유사하며 네트워크 액세스 제어를 설정하는 데 사용됩니다.",
   "The security group is similar to the firewall function for setting up network access control, or you can go to the console and create a new security group. (Note: The security group you selected will work on all virtual LANS on the instances.)": "security group은 방화벽 기능과 유사하며 네트워크 액세스 제어를 설정하는 데 사용됩니다. 또는 콘솔로 이동하여 새 security group을 만들 수 있습니다. (참고: 선택한 security group은 인스턴스의 모든 가상 LAN에서 작동합니다.)",
   "The selected VPC/ subnet does not have IPv6 enabled.": "선택한 VPC/subnet에는 IPv6가 활성화되어 있지 않습니다.",
+  "The selected image source requires a flavor with at least {diskSize} GB of root disk. Select a flavor with a larger root disk or use a different image source.": "",
+  "The selected image source requires a flavor with at least {ramSize} MB of RAM. Select a flavor with more RAM or use a different image source.": "",
   "The selected network has no subnet": "선택한 네트워크엔 서브넷이 존재하지 않습니다.",
   "The selected project is different from the project to which the network belongs. That is, the subnet to be created is not under the same project as the network. Please do not continue unless you are quit sure what you are doing.": "선택한 프로젝트가 네트워크가 속한 프로젝트와 다릅니다. 즉, 생성할 서브넷이 네트워크와 동일한 프로젝트에 속하지 않습니다. 확실하지 않은 경우 진행하지 마십시오.",
   "The session has expired, please log in again.": "세션이 만료되었습니다. 다시 로그인해주세요.",

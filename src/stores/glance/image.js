@@ -73,12 +73,32 @@ export class ImageStore extends Base {
   get mapper() {
     return (data) => {
       const { os_distro } = data;
-      const os = imageOS[os_distro] ? os_distro : 'others';
+      const system = this.osDistroListed(os_distro);
+      const os = system.isListed ? system.osName : 'others';
       return {
         ...data,
         os_distro: os,
       };
     };
+  }
+
+  osDistroListed(osDistro) {
+    let isListed = false;
+    let osName;
+
+    if (osDistro) {
+      const splitStr = osDistro.split(/-|_/);
+
+      for (let i = 0; i < splitStr.length; i++) {
+        if (imageOS[splitStr[i]]) {
+          isListed = true;
+          osName = splitStr[i];
+          break;
+        }
+      }
+    }
+
+    return { isListed, osName };
   }
 
   listDidFetch(items) {
