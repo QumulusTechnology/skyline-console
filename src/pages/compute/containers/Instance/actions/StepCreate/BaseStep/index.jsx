@@ -103,6 +103,10 @@ export class BaseStep extends Base {
         selectedRows: undefined,
         tab: 'all',
       },
+      bootableVolume: undefined,
+      instanceSnapshotDataVolumes: undefined,
+      instanceSnapshotDisk: undefined,
+      instanceSnapshotMinSize: undefined,
       bootFromVolume: false,
     };
     return values;
@@ -234,6 +238,56 @@ export class BaseStep extends Base {
     return data;
   }
 
+  get defaultBootableVolume() {
+    const data = {
+      data: this.volumes,
+      selectedRows: undefined,
+      selectedRowKeys: undefined,
+      tab: '',
+    };
+
+    if (this.volumes.length) {
+      data.selectedRowKeys = [this.volumes[0].id];
+      data.selectedRows = [this.volumes[0]];
+    }
+
+    return data;
+  }
+
+  get shouldDisplayDefaultImage() {
+    const { bootableVolume } = this.state;
+
+    return this.sourceTypeIsImage && !bootableVolume;
+  }
+
+  get shouldDisplayDefaultBootableVolume() {
+    return this.locationParams?.volume;
+  }
+
+  get defaultFlavor() {
+    const flavors = toJS(this.flavorStore.list.data);
+
+    const data = {
+      data: flavors,
+      tab: 'all',
+      selectedRowKeys: undefined,
+      selectedRows: undefined,
+    };
+
+    if (flavors.length) {
+      const dFlavor = flavors.find(
+        (it, index) => it.name === 't1.medium' || index === 0
+      );
+
+      if (dFlavor) {
+        data.selectedRows = [dFlavor] || undefined;
+        data.selectedRowKeys = [dFlavor.id] || undefined;
+      }
+    }
+
+    return data;
+  }
+
   get defaultNetwork() {
     const data = {
       data: this.networks,
@@ -243,7 +297,9 @@ export class BaseStep extends Base {
     };
 
     if (this.networks.length) {
-      const network = this.networks.find((it) => it.name === 'internal');
+      const network = this.networks.find(
+        (it, index) => it.name === 'internal' || index === 0
+      );
 
       data.selectedRows = [network];
       data.selectedRowKeys = [network.id];
@@ -345,6 +401,7 @@ export class BaseStep extends Base {
 
       this.updateContext({
         image: this.defaultImage,
+        flavor: this.defaultFlavor,
       });
     }
   }
@@ -506,9 +563,15 @@ export class BaseStep extends Base {
       await this.volumeStore.fetchDetail({
         id: volume,
       });
+
       this.updateContext({
         source: this.volumeSourceType,
+        bootableVolume: this.defaultBootableVolume,
+        flavor: this.defaultFlavor,
       });
+
+      this.updateFormValue('bootableVolume', this.defaultBootableVolume);
+      this.updateFormValue('flavor', this.defaultFlavor);
     } else {
       await this.volumeStore.fetchList({
         sortKey: 'bootable',
@@ -659,21 +722,32 @@ export class BaseStep extends Base {
   };
 
   onOSImageChange = (value) => {
-    if (value) {
+    if (
+      value &&
+      value?.selectedRows?.length &&
+      value?.selectedRowKeys?.length
+    ) {
       this.updateContext({
         image: value,
+        bootableVolume: undefined,
+        instanceSnapshot: undefined,
+        instanceSnapshotDisk: null,
+        instanceSnapshotDataVolumes: [],
+        instanceSnapshotMinSize: 0,
+        flavor: undefined,
       });
+
+      this.setState({
+        instanceSnapshotDisk: null,
+        instanceSnapshotMinSize: 9,
+        instanceSnapshotDataVolumes: [],
+        flavor: undefined,
+        bootableVolume: undefined,
+        instanceSnapshot: undefined,
+      });
+
+      this.removeOnSourceSelection('image');
     }
-
-    this.updateContext({
-      flavor: undefined,
-    });
-
-    this.setState({
-      flavor: undefined,
-    });
-
-    this.updateFormValue('flavor', undefined);
   };
 
   onChangeBootFromVolume = (value) => {
@@ -689,8 +763,6 @@ export class BaseStep extends Base {
 
   onInstanceSnapshotChange = async (value) => {
     const { min_disk, size, id } = value.selectedRows[0] || {};
-
-    this.onOSImageChange();
 
     if (!id) {
       this.updateContext({
@@ -728,8 +800,9 @@ export class BaseStep extends Base {
       });
     }
     const minSize = Math.max(min_disk, size, snapshotSize);
-
-    const bdmFormatData = JSON.parse(block_device_mapping) || [];
+    const bdmFormatData = block_device_mapping
+      ? JSON.parse(block_device_mapping)
+      : [];
     const systemDiskBdm = bdmFormatData[0] || {};
     const instanceSnapshotDisk = getDiskInfo({
       volumeDetail,
@@ -749,11 +822,31 @@ export class BaseStep extends Base {
   };
 
   onBootableVolumeChange = (value) => {
-    this.updateContext({
-      bootableVolume: value,
-    });
+    if (
+      value &&
+      value?.selectedRows?.length &&
+      value?.selectedRowKeys?.length
+    ) {
+      this.updateContext({
+        bootableVolume: value,
+        image: undefined,
+        instanceSnapshot: undefined,
+        instanceSnapshotDisk: null,
+        instanceSnapshotDataVolumes: [],
+        instanceSnapshotMinSize: undefined,
+      });
 
-    this.onOSImageChange();
+      this.setState({
+        instanceSnapshotDisk: null,
+        instanceSnapshotMinSize: 0,
+        instanceSnapshotDataVolumes: [],
+        flavor: undefined,
+        image: undefined,
+        instanceSnapshot: undefined,
+      });
+
+      this.removeOnSourceSelection('bootableVolume');
+    }
   };
 
   onSystemDiskChange = (value) => {
@@ -846,6 +939,28 @@ export class BaseStep extends Base {
   disableFlavorRow(record) {
     const { imageSize, ramSize } = this.getFlavorMinSize();
     return record.disk < imageSize || Math.ceil(record.ram / 1024) < ramSize;
+  }
+
+  removeOnSourceSelection(unincluded) {
+    const formItems = {
+      image: undefined,
+      bootableVolume: undefined,
+      flavor: undefined,
+      instanceSnapshot: undefined,
+      instanceSnapshotDisk: null,
+      instanceSnapshotMinSize: 0,
+      instanceSnapshotDataVolumes: [],
+    };
+
+    Object.keys(formItems)
+      .filter((item) =>
+        Array.isArray(unincluded)
+          ? !unincluded.includes(item)
+          : item !== unincluded
+      )
+      .forEach((item) => {
+        this.updateFormValue(item, formItems[item]);
+      });
   }
 
   get imageColumns() {
@@ -992,14 +1107,14 @@ export class BaseStep extends Base {
   getFlavorComponent() {
     const { image, instanceSnapshot, bootableVolume } = this.state;
 
-    let key;
+    let key = 0;
 
-    if (this.sourceTypeIsImage) {
-      key = image?.id || 0;
-    } else if (this.sourceTypeIsSnapshot) {
-      key = toJS(instanceSnapshot?.id) || 0;
-    } else if (this.sourceTypeIsVolume) {
-      key = bootableVolume?.id || 0;
+    if (this.sourceTypeIsImage && image?.id) {
+      key = image.id || 0;
+    } else if (this.sourceTypeIsSnapshot && toJS(instanceSnapshot)?.id) {
+      key = toJS(instanceSnapshot).id || 0;
+    } else if (this.sourceTypeIsVolume && bootableVolume?.id) {
+      key = bootableVolume.id || 0;
     }
 
     return (
@@ -1080,10 +1195,12 @@ export class BaseStep extends Base {
             name: 'name',
           },
         ],
-        initValue: {
-          selectedRows: this.defaultImage.selectedRows,
-          selectedRowKeys: this.defaultImage.selectedRowKeys,
-        },
+        initValue: this.shouldDisplayDefaultImage
+          ? {
+              selectedRows: this.defaultImage.selectedRows,
+              selectedRowKeys: this.defaultImage.selectedRowKeys,
+            }
+          : undefined,
         columns: this.imageColumns,
         tabs: this.systemTabs,
         defaultTabValue:
@@ -1126,6 +1243,12 @@ export class BaseStep extends Base {
             name: 'name',
           },
         ],
+        initValue: this.shouldDisplayDefaultBootableVolume
+          ? {
+              selectedRows: this.defaultBootableVolume.selectedRows,
+              selectedRowKeys: this.defaultBootableVolume.selectedRowKeys,
+            }
+          : undefined,
         columns: this.volumeColumns,
       },
       {

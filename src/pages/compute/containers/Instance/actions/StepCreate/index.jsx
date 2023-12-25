@@ -270,15 +270,31 @@ export class StepCreate extends StepAction {
       physicalNodeType,
       securityGroup,
       source,
+      bootableVolume,
+      instanceSnapshot,
     } = this.state.data;
 
+    let hasSource = false;
+    if (source?.value === 'image') {
+      hasSource =
+        image && image?.selectedRowKeys?.length && image?.selectedRows?.length;
+    } else if (source?.value === 'bootableVolume') {
+      hasSource =
+        bootableVolume &&
+        bootableVolume?.selectedRowKeys?.length &&
+        bootableVolume?.selectedRows?.length;
+    } else if (source?.value === 'instanceSnapshot') {
+      hasSource =
+        instanceSnapshot &&
+        instanceSnapshot?.selectedRowKeys?.length &&
+        instanceSnapshot?.selectedRows?.length;
+    }
+
     return (
+      !hasSource ||
       !flavor ||
       !flavor?.selectedRowKeys?.length ||
       !flavor?.selectedRows?.length ||
-      !image ||
-      !image?.selectedRowKeys?.length ||
-      !image?.selectedRows?.length ||
       !keypair ||
       !keypair?.selectedRowKeys?.length ||
       !keypair?.selectedRows?.length ||
@@ -293,7 +309,6 @@ export class StepCreate extends StepAction {
       !securityGroup ||
       !securityGroup?.selectedRowKeys?.length ||
       !securityGroup?.selectedRows?.length ||
-      !source ||
       !!this.errorMsg
     );
   }
