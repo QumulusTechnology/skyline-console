@@ -42,8 +42,8 @@ export const imageOS = {
   fedora: t('Fedora'),
   windows: t('Windows'),
   debian: t('Debian'),
-  coreos: t('CoreOS'),
-  arch: t('Arch'),
+  rocky: t('Rocky Linux'),
+  arch: t('Arch Linux'),
   freebsd: t('FreeBSD'),
   others: t('Others'),
 };
@@ -154,16 +154,14 @@ export const getImageSystemTabs = () => {
     'fedora',
     'windows',
     'debian',
-    'coreos',
+    'rocky',
     'arch',
     'freebsd',
     'others',
   ];
   return valueList.map((value) => {
-    const label =
-      value !== 'others'
-        ? value.slice(0, 1).toUpperCase() + value.slice(1)
-        : t('Others');
+    const label = imageOS[value];
+
     return {
       label,
       value,
