@@ -297,7 +297,6 @@ export class StepCreate extends StepAction {
       !keypair ||
       !keypair?.selectedRowKeys?.length ||
       !keypair?.selectedRows?.length ||
-      !loginType ||
       !name ||
       !networkSelect ||
       !networkSelect?.selectedRowKeys?.length ||
