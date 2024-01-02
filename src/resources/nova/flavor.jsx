@@ -191,7 +191,11 @@ export const getBaseColumns = (self) => [
   },
 ];
 
-export const getMinBaseColumns = (minRamSize, minRDSize) => [
+export const getMinBaseColumns = (
+  minRamSize,
+  minRDSize,
+  bootFromVolume = false
+) => [
   {
     title: t('ID/Name'),
     dataIndex: 'name',
@@ -232,7 +236,7 @@ export const getMinBaseColumns = (minRamSize, minRDSize) => [
     title: t('Root Disk'),
     dataIndex: 'disk',
     render: (diskSize) =>
-      minRDSize && minRDSize > diskSize ? (
+      minRDSize && !bootFromVolume && minRDSize > diskSize ? (
         <>
           <Tooltip
             title={t(

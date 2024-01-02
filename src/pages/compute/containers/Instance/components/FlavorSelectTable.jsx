@@ -187,8 +187,9 @@ export class FlavorSelectTable extends Component {
     const { category, arch } = this.state;
     const {
       minSize: { imageSize, ramSize },
+      bootFromVolume,
     } = this.props;
-    let base = [...getMinBaseColumns(ramSize, imageSize)];
+    let base = [...getMinBaseColumns(ramSize, imageSize, bootFromVolume)];
     base[0].title = t('Name');
     base.splice(1, 1);
     if (!categoryHasIOPS(category)) {
@@ -250,8 +251,8 @@ export class FlavorSelectTable extends Component {
     onChange && onChange(value);
   };
 
-  disableRow(rec, minSize) {
-    return rec.disk < minSize.imageSize ||
+  disableRow(rec, minSize, bootFromVolume = false) {
+    return (rec.disk < minSize.imageSize && !bootFromVolume) ||
       Math.ceil(rec.ram / 1024) < minSize.ramSize
       ? styles['bg-disable']
       : '';
@@ -370,7 +371,7 @@ export class FlavorSelectTable extends Component {
   }
 
   render() {
-    const { value, disabledFunc, minSize } = this.props;
+    const { value, disabledFunc, minSize, bootFromVolume } = this.props;
     const isLoading =
       this.settingStore.list.isLoading && this.flavorStore.list.isLoading;
     const props = {
@@ -381,7 +382,7 @@ export class FlavorSelectTable extends Component {
       filterParams: getFlavorSearchFilters(),
       value,
       initValue: this.defaultFlavor,
-      rowClassName: (rec) => this.disableRow(rec, minSize),
+      rowClassName: (rec) => this.disableRow(rec, minSize, bootFromVolume),
       onChange: this.onChange,
       disabledFunc,
     };
