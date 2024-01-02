@@ -202,7 +202,7 @@ export class BaseStep extends Base {
       deleteTypeLabel: 'Deleted with the instance',
       errorMsg: undefined,
       options: this.volumeTypes,
-      size: this.getFlavorMinSize(image, instanceSnapshot).imageSize || 5,
+      size: this.getFlavorMinSize(image, instanceSnapshot).imageSize,
       type: undefined,
       typeOption: undefined,
     };
@@ -661,7 +661,7 @@ export class BaseStep extends Base {
 
   getFlavorMinSize(image = undefined, instanceSnapshot = undefined) {
     const { ram, disk } = this.state.flavor || {};
-    let imageSize = disk || 1;
+    let imageSize = disk || 5;
     let ramSize = Math.max(Math.ceil(ram / 1024), 1) || 1;
 
     if (this.sourceTypeIsImage) {
@@ -1170,7 +1170,7 @@ export class BaseStep extends Base {
       <InstanceVolume
         key={key}
         options={this.volumeTypes}
-        minSize={this.getFlavorMinSize()}
+        minSize={this.getFlavorMinSize().imageSize}
         onChange={this.onSystemDiskChange}
         disableVolumeType={this.volumeTypes.length <= 1}
       />
