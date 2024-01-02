@@ -272,7 +272,6 @@ export class StepCreate extends StepAction {
       bootableVolume,
       instanceSnapshot,
     } = this.state.data;
-
     let hasSource = false;
     if (source?.value === 'image') {
       hasSource =

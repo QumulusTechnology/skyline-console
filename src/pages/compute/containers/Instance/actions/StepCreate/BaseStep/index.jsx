@@ -93,7 +93,7 @@ export class BaseStep extends Base {
       source = this.snapshotSourceType;
     }
     const values = {
-      systemDisk: this.defaultVolumeType,
+      systemDisk: this.defaultVolumeType(),
       source,
       project: this.currentProjectName,
       dataDisk: [],
@@ -178,7 +178,7 @@ export class BaseStep extends Base {
   }
 
   get volumeTypes() {
-    return volumeTypes();
+    return volumeTypes().filter((it) => it.label !== '__BACKUP__');
   }
 
   get volumes() {
@@ -196,17 +196,29 @@ export class BaseStep extends Base {
       }));
   }
 
-  get defaultVolumeType() {
+  defaultVolumeType(image = undefined, instanceSnapshot = undefined) {
     const data = {
-      size: 40,
       deleteType: 1,
+      deleteTypeLabel: 'Deleted with the instance',
+      errorMsg: undefined,
+      options: this.volumeTypes,
+      size: this.getFlavorMinSize(image, instanceSnapshot).imageSize || 5,
       type: undefined,
       typeOption: undefined,
     };
 
-    if (this.volumeTypes.length) {
-      data.type = this.volumeTypes[0].value;
-      data.typeOption = this.volumeTypes[0];
+    const {
+      context: { systemDisk },
+    } = this.props;
+
+    if (systemDisk) {
+      data.type = systemDisk.type;
+      data.typeOption = systemDisk.typeOption;
+    } else if (this.volumeTypes.length) {
+      const vtData = this.volumeTypes.find((it) => it.label === '__DEFAULT__');
+
+      data.type = vtData.value;
+      data.typeOption = vtData;
     }
 
     return data;
@@ -513,12 +525,10 @@ export class BaseStep extends Base {
     if (this.enableCinder) {
       await this.volumeTypeStore.fetchList();
 
-      const {
-        context: { systemDisk },
-      } = this.props;
+      const { systemDisk } = this.state;
 
       if (!systemDisk?.type && this.volumeTypes.length) {
-        this.updateFormValue('systemDisk', this.defaultVolumeType);
+        this.updateFormValue('systemDisk', this.defaultVolumeType());
       }
     }
   }
@@ -604,7 +614,7 @@ export class BaseStep extends Base {
 
   checkSystemDisk = (rule, value) => {
     const { size = 10, type } = value || {};
-    const minSize = this.getSystemDiskMinSize();
+    const minSize = this.getFlavorMinSize().imageSize;
     if (!type) {
       // eslint-disable-next-line prefer-promise-reject-errors
       return Promise.reject('');
@@ -649,23 +659,27 @@ export class BaseStep extends Base {
     return Math.max(flavorSize, 1);
   }
 
-  getFlavorMinSize() {
+  getFlavorMinSize(image = undefined, instanceSnapshot = undefined) {
     const { ram, disk } = this.state.flavor || {};
-
     let imageSize = disk || 1;
     let ramSize = Math.max(Math.ceil(ram / 1024), 1) || 1;
 
     if (this.sourceTypeIsImage) {
-      const { min_disk = 0, size = 0, min_ram = 0 } = this.state.image || {};
+      const {
+        min_disk = 0,
+        size = 0,
+        min_ram = 0,
+      } = image || this.state.image || {};
       const sizeGiB = Math.ceil(size / 1024 / 1024 / 1024);
 
-      imageSize = Math.max(min_disk, sizeGiB, 1);
+      imageSize = Math.max(min_disk, sizeGiB, 5);
       ramSize = Math.max(Math.ceil(min_ram / 1024), 1);
     }
     if (this.sourceTypeIsSnapshot) {
-      const { instanceSnapshot } = this.state;
-
-      imageSize = instanceSnapshot?.min_disk || 1;
+      imageSize =
+        instanceSnapshot?.min_disk ||
+        this.state.instanceSnapshot?.min_disk ||
+        5;
       ramSize = Math.max(Math.ceil(instanceSnapshot?.min_ram / 1024), 1) || 1;
     }
     if (this.sourceTypeIsVolume) {
@@ -735,6 +749,7 @@ export class BaseStep extends Base {
         instanceSnapshotDataVolumes: [],
         instanceSnapshotMinSize: 0,
         flavor: undefined,
+        systemDisk: this.defaultVolumeType(value.selectedRows[0]),
       });
 
       this.setState({
@@ -744,9 +759,14 @@ export class BaseStep extends Base {
         flavor: undefined,
         bootableVolume: undefined,
         instanceSnapshot: undefined,
+        systemDisk: this.defaultVolumeType(value.selectedRows[0]),
       });
 
       this.removeOnSourceSelection('image');
+      this.updateFormValue(
+        'systemDisk',
+        this.defaultVolumeType(value.selectedRows[0])
+      );
     }
   };
 
@@ -938,7 +958,12 @@ export class BaseStep extends Base {
 
   disableFlavorRow(record) {
     const { imageSize, ramSize } = this.getFlavorMinSize();
-    return record.disk < imageSize || Math.ceil(record.ram / 1024) < ramSize;
+    const { bootFromVolume } = this.state;
+
+    return (
+      (record.disk < imageSize && !bootFromVolume) ||
+      Math.ceil(record.ram / 1024) < ramSize
+    );
   }
 
   removeOnSourceSelection(unincluded) {
@@ -1120,9 +1145,34 @@ export class BaseStep extends Base {
     return (
       <FlavorSelectTable
         key={key}
+        bootFromVolume={this.state.bootFromVolume}
         minSize={this.getFlavorMinSize()}
         disabledFunc={(record) => this.disableFlavorRow(record)}
         onChange={this.onFlavorChange}
+      />
+    );
+  }
+
+  getInstanceVolumeComponent() {
+    const { image, instanceSnapshot, bootableVolume } = this.state;
+
+    let key = 0;
+
+    if (this.sourceTypeIsImage && image?.id) {
+      key = image.id || 0;
+    } else if (this.sourceTypeIsSnapshot && toJS(instanceSnapshot)?.id) {
+      key = toJS(instanceSnapshot).id || 0;
+    } else if (this.sourceTypeIsVolume && bootableVolume?.id) {
+      key = bootableVolume.id || 0;
+    }
+
+    return (
+      <InstanceVolume
+        key={key}
+        options={this.volumeTypes}
+        minSize={this.getFlavorMinSize()}
+        onChange={this.onSystemDiskChange}
+        disableVolumeType={this.volumeTypes.length <= 1}
       />
     );
   }
@@ -1272,14 +1322,11 @@ export class BaseStep extends Base {
         name: 'systemDisk',
         label: t('System Disk'),
         type: 'instance-volume',
-        options: this.volumeTypes,
         required: this.showSystemDiskByBootFromVolume,
         hidden: !this.showSystemDiskByBootFromVolume,
         validator: this.checkSystemDisk,
-        minSize: this.getSystemDiskMinSize(),
         extra: t('Disk size is limited by the min disk of flavor, image, etc.'),
-        onChange: this.onSystemDiskChange,
-        dependencies: ['flavor', 'image', 'instanceSnapshot', 'bootFromVolume'],
+        component: this.getInstanceVolumeComponent(),
       },
       {
         name: 'deleteVolumeInstance',
@@ -1304,7 +1351,7 @@ export class BaseStep extends Base {
         label: t('Data Disk'),
         type: 'add-select',
         options: this.volumeTypes,
-        defaultItemValue: this.defaultVolumeType,
+        defaultItemValue: this.defaultVolumeType(),
         hidden: this.hideDataDisk,
         itemComponent: InstanceVolume,
         minCount: 0,
@@ -1315,6 +1362,7 @@ export class BaseStep extends Base {
         ),
         onChange: this.onDataDiskChange,
         display: this.enableCinder,
+        disableVolumeType: this.volumeTypes.length <= 1,
       },
       {
         type: 'divider',

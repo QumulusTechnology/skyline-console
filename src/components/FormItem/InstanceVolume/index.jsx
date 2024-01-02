@@ -136,7 +136,7 @@ export default class InstanceVolume extends React.Component {
       errorMsg,
       minSize,
     } = this.state;
-    const { name, showDelete = true } = this.props;
+    const { name, showDelete = true, disableVolumeType } = this.props;
     const selects = (
       <Select
         value={type}
@@ -144,6 +144,7 @@ export default class InstanceVolume extends React.Component {
         onChange={this.onSelectChange}
         className={styles.select}
         placeholder={t('Please select type')}
+        disabled={disableVolumeType}
       />
     );
     const input = (
