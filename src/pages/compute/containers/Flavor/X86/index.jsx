@@ -18,9 +18,7 @@ import { FlavorStore } from 'stores/nova/flavor';
 import { emptyActionConfig } from 'utils/constants';
 import {
   flavorArchitectures,
-  getBaseColumns,
-  extraColumns,
-  x86CategoryList,
+  getMinBaseColumns,
   getFlavorSearchFilters,
 } from 'resources/nova/flavor';
 import actionConfigs from './actions';
@@ -42,19 +40,24 @@ export class Flavor extends Base {
     return true;
   }
 
-  getColumns = () => [...getBaseColumns(this), ...extraColumns];
+  getColumns = () =>
+    getMinBaseColumns().filter((col) => col.dataIndex !== 'category');
 
   get actionConfigs() {
     return this.isAdminPage ? actionConfigs : emptyActionConfig;
   }
 
-  updateFetchParams = (params) => ({
-    ...params,
-    tab: 'x86_architecture',
-  });
+  updateFetchParams = (params) => {
+    const { tab } = this.props;
+
+    return {
+      ...params,
+      tab: tab || 'general_purpose',
+    };
+  };
 
   get searchFilters() {
-    return getFlavorSearchFilters(x86CategoryList);
+    return getFlavorSearchFilters();
   }
 }
 
