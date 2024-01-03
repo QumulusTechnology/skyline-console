@@ -100,9 +100,7 @@ export class FlavorStore extends Base {
 
   async listDidFetch(items, _, filters) {
     const { tab } = filters;
-    const newItems = tab
-      ? items.filter((it) => it.architecture === tab)
-      : items;
+    const newItems = tab ? items.filter((it) => it.category === tab) : items;
     return newItems;
   }
 

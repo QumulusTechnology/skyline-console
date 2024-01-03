@@ -15,12 +15,8 @@
 import { observer, inject } from 'mobx-react';
 import Base from 'containers/TabList';
 import globalSettingStore from 'stores/skyline/setting';
-import { flavorArchitectures, getAllArchitecture } from 'resources/nova/flavor';
+import { getAllCategories, x86CategoryList } from 'resources/nova/flavor';
 import X86 from './X86';
-import Heterogeneous from './Heterogeneous';
-import Arm from './Arm';
-import BareMetal from './BareMetal';
-import Other from './Other';
 
 export class Flavor extends Base {
   init() {
@@ -30,25 +26,22 @@ export class Flavor extends Base {
 
   async getSettings() {
     await this.settingStore.fetchList();
-    const architectures = getAllArchitecture(this.settingStore.list.data);
+    const categories = getAllCategories(this.settingStore.list.data).filter(
+      (cat) =>
+        cat.arch === 'x86_architecture' && cat.name !== 'high_clock_speed'
+    );
+
     this.setState({
-      architectures,
+      categories,
     });
   }
 
   get tabs() {
-    const { architectures = [] } = this.state;
-    const allMap = {
-      x86_architecture: X86,
-      heterogeneous_computing: Heterogeneous,
-      bare_metal: BareMetal,
-      arm_architecture: Arm,
-      custom: Other,
-    };
-    return architectures.map((it) => ({
-      title: flavorArchitectures[it],
-      key: it,
-      component: allMap[it],
+    const { categories = [] } = this.state;
+    return categories.map((it) => ({
+      title: x86CategoryList[it.name],
+      key: it.name,
+      component: X86,
     }));
   }
 }

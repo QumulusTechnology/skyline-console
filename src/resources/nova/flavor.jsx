@@ -321,6 +321,25 @@ export const getAllArchitecture = (data, withCustom = true) => {
   return architectures;
 };
 
+export const getAllCategories = (data) => {
+  const categories = [];
+  try {
+    const item = (data || []).find((it) => it.key === 'flavor_families');
+    ((item && item.value) || []).forEach((it) => {
+      if (it.categories?.length) {
+        it.categories.forEach((cat) => {
+          categories.push({ name: cat.name, arch: it.architecture });
+        });
+      }
+    });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
+  }
+
+  return categories;
+};
+
 export const getFamilyItemValue = (data) => {
   const item = (data || []).find((it) => it.key === 'flavor_families');
   return item ? item.value : [];
