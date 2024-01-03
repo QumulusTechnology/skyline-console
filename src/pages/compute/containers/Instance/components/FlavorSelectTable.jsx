@@ -122,7 +122,7 @@ export class FlavorSelectTable extends Component {
       // eslint-disable-next-line no-console
       console.log(e);
     }
-    return [all, ...values];
+    return [...values, all];
   }
 
   get categories() {
@@ -265,9 +265,9 @@ export class FlavorSelectTable extends Component {
         (it) => it.id === selectedRowKeys[0]
       );
       if (flavor) {
-        const { architecture, category } = flavor;
+        const { category } = flavor;
         this.setState({
-          arch: architecture === 'custom' ? 'all' : architecture,
+          arch: 'x86_architecture',
           category,
         });
       }
