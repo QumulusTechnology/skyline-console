@@ -24,7 +24,6 @@ import {
   getAdd,
   fetchQuota,
   getQuota,
-  onVolumeSizeChange,
   setCreateVolumeCount,
   setCreateVolumeSize,
   setCreateVolumeType,
@@ -48,6 +47,7 @@ import {
 } from 'resources/glance/image';
 import { volumeTypeSelectProps } from 'resources/cinder/volume-type';
 import { allSettled } from 'utils';
+import SliderInput from 'src/components/FormItem/SliderInput';
 import styles from './index.less';
 
 export class Create extends FormAction {
@@ -58,6 +58,8 @@ export class Create extends FormAction {
       count: 1,
       sharedDisabled: false,
       confirmCount: 0,
+      name: '',
+      volumeTypeLoading: false,
     };
     this.message = '';
     this.snapshotStore = globalSnapshotStore;
@@ -105,7 +107,23 @@ export class Create extends FormAction {
       $message.error(error);
       this.message = error;
     }
-    return disable;
+    return disable || !this.hasAllDefaultValues;
+  }
+
+  get hasAllDefaultValues() {
+    const { volume_type, image, snapshot, size, source, name } = this.state;
+    const hasVolumeType = volume_type && volume_type?.id;
+    let hasDataSourceType = false;
+
+    if (source === 'image') {
+      hasDataSourceType = image && image?.id && hasVolumeType;
+    } else if (source === 'snapshot') {
+      hasDataSourceType = snapshot && snapshot?.id && hasVolumeType;
+    } else {
+      hasDataSourceType = hasVolumeType;
+    }
+
+    return hasDataSourceType && size && name;
   }
 
   get instanceName() {
@@ -143,7 +161,7 @@ export class Create extends FormAction {
   }
 
   get defaultSize() {
-    return this.quotaIsLimit && this.maxSize < 10 ? this.maxSize : 10;
+    return this.quotaIsLimit && this.maxSize < 10 ? this.maxSize || 10 : 10;
   }
 
   get defaultValue() {
@@ -159,7 +177,7 @@ export class Create extends FormAction {
   }
 
   get availableZones() {
-    const availableZonesList = [{ label: t('Not select'), value: 'noSelect' }];
+    const availableZonesList = [];
     (this.volumeStore.availabilityZones || [])
       .filter((it) => it.zoneState.available)
       .forEach((it) => {
@@ -226,26 +244,50 @@ export class Create extends FormAction {
     this.imageStore.fetchList({ all_projects: this.hasAdminRole });
   }
 
+  getCapacityComponent() {
+    const minSize = this.getDiskMinSize();
+    const { image, snapshot, volume_type, size } = this.state;
+    let key = 0;
+
+    if (this.sourceTypeIsImage && image && image?.id) {
+      key = image.id || 0;
+    } else if (this.sourceTypeIsSnapshot && snapshot && snapshot?.id) {
+      key = snapshot.id || 0;
+    } else {
+      key = volume_type?.id || 0;
+    }
+
+    return (
+      <SliderInput
+        key={key}
+        value={size}
+        min={minSize}
+        max={this.maxSize}
+        description={`${size || this.defaultSize}GiB-${this.maxSize}GiB`}
+        required={this.quotaIsLimit}
+        hidden={!this.quotaIsLimit}
+        onChange={this.onVolumeSizeChange}
+      />
+    );
+  }
+
   async getVolumeTypes() {
     const types = await this.volumeTypeStore.fetchList();
     if (types.length > 0) {
-      const defaultType = types[0];
+      const defaultType = types.find((it) => it.name === '__DEFAULT__');
       const { id, name } = defaultType;
       const initVolumeType = {
         selectedRowKeys: [id],
         selectedRows: [defaultType],
       };
       setCreateVolumeType(name);
-      this.setState(
-        {
-          initVolumeType,
-          volume_type: defaultType,
-        },
-        () => {
-          this.updateFormValue('volume_type', initVolumeType);
-          this.updateDefaultValue();
-        }
-      );
+      this.setState({
+        initVolumeType,
+        volume_type: defaultType,
+        size: this.defaultSize,
+      });
+      this.updateFormValue('volume_type', initVolumeType);
+      this.updateFormValue('size', this.defaultSize);
     }
   }
 
@@ -255,6 +297,12 @@ export class Create extends FormAction {
     this.onCountChange(1);
     this.updateDefaultValue();
   }
+
+  onVolumeNameChange = (event) => {
+    this.setState({
+      name: event.currentTarget.value,
+    });
+  };
 
   onImageTabChange = (value) => {
     this.setState({
@@ -350,15 +398,26 @@ export class Create extends FormAction {
     const { selectedRows = [] } = value || {};
     let volumeTypeId = '';
     let volumeType = null;
+    this.setState({
+      volumeTypeLoading: true,
+    });
     if (selectedRows.length) {
-      const { origin_data: { volume_type_id } = {}, id } =
-        selectedRows[0] || {};
+      const {
+        origin_data: { volume_type_id } = {},
+        id,
+        size,
+        volume_id,
+      } = selectedRows[0] || {};
+
+      this.setState({
+        size,
+      });
+      this.updateFormValue('size', size);
+
       if (!volume_type_id) {
         try {
-          const detail = await this.snapshotStore.fetchDetail({ id });
-          const {
-            volume: { volume_type },
-          } = detail || {};
+          const result = await this.volumeStore.fetchDetail({ id: volume_id });
+          const { volume_type } = result || {};
           volumeType = this.volumeTypes.find((it) => it.name === volume_type);
           volumeTypeId = volumeType.id;
         } catch (e) {
@@ -379,6 +438,22 @@ export class Create extends FormAction {
         });
       }
     }
+
+    this.setState({
+      volumeTypeLoading: false,
+    });
+  };
+
+  onOsImageChange = (value) => {
+    const { min_disk } = value.selectedRows[0] || {};
+
+    if (min_disk) {
+      this.setState({
+        size: min_disk,
+      });
+
+      this.updateFormValue('size', min_disk);
+    }
   };
 
   get nameForStateUpdate() {
@@ -387,7 +462,6 @@ export class Create extends FormAction {
 
   get formItems() {
     const { initVolumeType } = this.state;
-    const minSize = this.getDiskMinSize();
     return [
       {
         name: 'project',
@@ -400,9 +474,22 @@ export class Create extends FormAction {
         type: 'select',
         placeholder: t('Please select'),
         options: this.availableZones,
+        disabled: this.availableZones.length <= 1,
         tip: t(
           'Unless you know clearly which AZ to create the volume in, you don not need to fill in here.'
         ),
+      },
+      {
+        type: 'divider',
+      },
+      {
+        name: 'name',
+        label: t('Name'),
+        type: 'input-name',
+        placeholder: t('Please input name'),
+        required: true,
+        isInstance: true,
+        onChange: this.onVolumeNameChange,
       },
       {
         type: 'divider',
@@ -435,6 +522,7 @@ export class Create extends FormAction {
         defaultTabValue: this.systemTabs[0].value,
         selectedLabel: t('Image'),
         onTabChange: this.onImageTabChange,
+        onChange: this.onOsImageChange,
       },
       {
         name: 'snapshot',
@@ -494,7 +582,8 @@ export class Create extends FormAction {
         ),
         ...volumeTypeSelectProps,
         data: this.volumeTypes,
-        isLoading: this.volumeTypeStore.list.isLoading,
+        isLoading:
+          this.volumeTypeStore.list.isLoading || this.state.volumeTypeLoading,
         required: true,
         extra: this.getVolumeTypeExtra(),
         onChange: this.onVolumeTypeChange,
@@ -504,31 +593,10 @@ export class Create extends FormAction {
         name: 'size',
         label: t('Capacity (GiB)'),
         type: 'slider-input',
-        max: this.maxSize,
-        min: minSize,
-        description: `${minSize}GiB-${this.maxSize}GiB`,
-        required: this.quotaIsLimit,
-        hidden: !this.quotaIsLimit,
-        onChange: onVolumeSizeChange,
-      },
-      {
-        name: 'size',
-        label: t('Capacity (GiB)'),
-        type: 'input-int',
-        min: minSize,
-        hidden: this.quotaIsLimit,
-        required: !this.quotaIsLimit,
-        onChange: onVolumeSizeChange,
+        component: this.getCapacityComponent(),
       },
       {
         type: 'divider',
-      },
-      {
-        name: 'name',
-        label: t('Name'),
-        type: 'input-name',
-        placeholder: t('Please input name'),
-        required: true,
       },
       {
         title: t('Description'),
@@ -597,6 +665,7 @@ export class Create extends FormAction {
       shared,
       name,
       volume_type,
+      source,
     } = data;
     const volume = {
       name,
@@ -608,21 +677,24 @@ export class Create extends FormAction {
     if (
       backup &&
       Array.isArray(backup.selectedRowKeys) &&
-      backup.selectedRowKeys.length
+      backup.selectedRowKeys.length &&
+      source?.value === 'blank-volume'
     ) {
       volume.backup_id = backup.selectedRowKeys[0];
     }
     if (
       image &&
       Array.isArray(image.selectedRowKeys) &&
-      image.selectedRowKeys.length
+      image.selectedRowKeys.length &&
+      source?.value === 'image'
     ) {
       volume.imageRef = image.selectedRowKeys[0];
     }
     if (
       snapshot &&
       Array.isArray(snapshot.selectedRowKeys) &&
-      snapshot.selectedRowKeys.length
+      snapshot.selectedRowKeys.length &&
+      source?.value === 'snapshot'
     ) {
       volume.snapshot_id = snapshot.selectedRowKeys[0];
     }
