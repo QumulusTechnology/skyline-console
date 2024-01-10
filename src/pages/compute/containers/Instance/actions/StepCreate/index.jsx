@@ -477,13 +477,15 @@ export class StepCreate extends StepAction {
     const { cores = {}, ram = {} } = this.projectStore.novaQuota;
     const { left = 0 } = cores || {};
     const { left: leftRam = 0 } = ram || {};
+    if (isEmpty(cores) || isEmpty(ram)) {
+      return '';
+    }
     if (left !== -1 && left < newCPU) {
       return this.getQuotaMessage(newCPU, cores, t('CPU'));
     }
     if (leftRam !== -1 && leftRam < newRam) {
       return this.getQuotaMessage(newRam, ram, t('Memory'));
     }
-    return '';
   }
 
   getServerGroupQuota() {
