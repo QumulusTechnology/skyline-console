@@ -50,6 +50,11 @@ const getAntdLocale = (locale) => {
 
 const localeProvider = getAntdLocale(i18n.getLocale());
 
+(() => {
+  store.info.product_name = GLOBAL_VARIABLES.product_name || '';
+  store.info.title = GLOBAL_VARIABLES.title || '';
+})();
+
 const render = (component) => {
   ReactDOM.render(
     <Suspense fallback={<PageLoading className="sl-page-loading" />}>
