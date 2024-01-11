@@ -14,7 +14,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import cloudLogo from 'asset/image/cloud-logo.svg';
+import cloudLogo from 'asset/image/qumulus.svg';
 import { getPath } from 'utils/route-map';
 import classnames from 'classnames';
 import GlobalNav from '../GlobalNav';

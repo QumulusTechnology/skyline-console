@@ -75,7 +75,7 @@ export class Login extends Component {
     const language = getLocaleShortName();
     const name =
       product_name[language] || t('Cloud Platform') || 'Cloud Platform';
-    return t('Welcome, {name}', { name });
+    return t('{name}', { name });
   }
 
   get domains() {
