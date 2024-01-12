@@ -151,6 +151,7 @@ export class Instance extends Base {
         dataIndex: 'fixed_addresses',
         sorter: false,
         isHideable: true,
+        copyable: true,
         render: (fixed_addresses) => {
           if (!fixed_addresses.length) {
             return '-';
