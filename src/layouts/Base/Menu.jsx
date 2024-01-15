@@ -143,22 +143,39 @@ export class LayoutMenu extends Component {
           className={styles['menu-item']}
           onClick={this.onClickMenuItem}
         >
-          {/* <Menu.Item key={item.key} className={styles['menu-item-no-child']}> */}
-          {item.icon}
-          <span className={styles['menu-item-title']}>
-            {item.name.length >= this.maxTitleLength ? (
-              <Tooltip title={item.name} placement="right">
-                {item.name}
-              </Tooltip>
-            ) : (
-              item.name
-            )}
+          <span
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'start',
+            }}
+          >
+            {/* <Menu.Item key={item.key} className={styles['menu-item-no-child']}> */}
+            {item.icon}
+            <span
+              className={styles['menu-item-title']}
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              {item.name.length >= this.maxTitleLength ? (
+                <Tooltip title={item.name} placement="right">
+                  {item.name}
+                </Tooltip>
+              ) : (
+                item.name
+              )}
+            </span>
           </span>
         </Menu.Item>
       );
     }
     const title = (
-      <span>
+      <span
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'start',
+        }}
+      >
         {item.icon}
         <span className={styles['menu-item-title']}>
           {item.name.length >= this.maxTitleLength ? (
