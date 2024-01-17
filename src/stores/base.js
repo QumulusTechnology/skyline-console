@@ -357,6 +357,42 @@ export default class BaseStore {
   }
 
   @action
+  async pureFetchListWithStore({
+    limit,
+    page,
+    sortKey,
+    sortOrder,
+    conditions,
+    timeFilter,
+    ...filters
+  } = {}) {
+    // todo: no page, no limit, fetch all
+    const { tab, all_projects, ...rest } = filters;
+    const params = { ...rest };
+    if (all_projects) {
+      if (!this.listFilterByProject) {
+        params.all_projects = true;
+      }
+    }
+    const allData = await this.requestListAll(params);
+
+    this.list.update({
+      data: allData,
+      total: allData.length || 0,
+      limit: Number(limit) || 10,
+      page: Number(page) || 1,
+      sortKey,
+      sortOrder,
+      filters,
+      timeFilter,
+      isLoading: false,
+      ...(this.list.silent ? {} : { selectedRowKeys: [] }),
+    });
+
+    return allData;
+  }
+
+  @action
   async fetchList({
     limit,
     page,

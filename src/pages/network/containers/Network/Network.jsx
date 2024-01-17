@@ -92,18 +92,21 @@ export class Networks extends Base {
       return {
         ...params,
         project_id: this.currentProjectId,
+        limit: 50,
       };
     }
     if (this.isSharedTab) {
       return {
         ...params,
         shared: true,
+        limit: 50,
       };
     }
     if (this.isExternalTab) {
       return {
         ...params,
         'router:external': true,
+        limit: 50,
       };
     }
     return { ...params };

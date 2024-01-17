@@ -24,6 +24,7 @@ import {
   availabilityZoneState,
   availabilityZoneResource,
 } from 'resources/neutron/neutron';
+import { toJS } from 'mobx';
 
 export class Create extends ModalAction {
   static id = 'create';
@@ -38,6 +39,7 @@ export class Create extends ModalAction {
     this.projectStore = globalProjectStore;
     this.fetchAzones();
     this.getQuota();
+    this.fetchExternalNetworks();
   }
 
   get name() {
@@ -56,6 +58,10 @@ export class Create extends ModalAction {
     globalNeutronStore.fetchAvailableZones();
   }
 
+  async fetchExternalNetworks() {
+    await this.networkStore.pureFetchListWithStore({ 'router:external': true });
+  }
+
   get aZones() {
     return (globalNeutronStore.availableZones || [])
       .filter((it) => it.state === 'available' && it.resource === 'router')
@@ -63,6 +69,10 @@ export class Create extends ModalAction {
         ...it,
         id: it.name,
       }));
+  }
+
+  get externalNetworks() {
+    return toJS(this.networkStore.list.data) || [];
   }
 
   static get disableSubmit() {
@@ -200,8 +210,7 @@ export class Create extends ModalAction {
         name: 'externalNetwork',
         label: t('External Gateway'),
         type: 'select-table',
-        backendPageStore: this.networkStore,
-        extraParams: { 'router:external': true },
+        data: this.externalNetworks,
         required: openExternalNetwork,
         hidden: !openExternalNetwork,
         filterParams: [
