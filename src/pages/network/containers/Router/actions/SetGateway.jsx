@@ -21,7 +21,7 @@ import { networkStatus, networkSortProps } from 'resources/neutron/network';
 export class SetGateway extends ModalAction {
   static id = 'set-gateway';
 
-  static title = t('Set Gateway');
+  static title = t('Attach Gateway');
 
   init() {
     this.store = globalRouterStore;
@@ -39,15 +39,15 @@ export class SetGateway extends ModalAction {
   }
 
   get name() {
-    return t('Set Gateway');
+    return t('Attach Gateway');
   }
 
   get buttonText() {
-    return t('Set Gateway');
+    return t('Attach Gateway');
   }
 
   get actionName() {
-    return t('Set Gateway');
+    return t('Attach Gateway');
   }
 
   static allowed = (item) => Promise.resolve(!item.external_gateway_info);

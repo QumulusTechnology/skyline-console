@@ -21,15 +21,15 @@ export default class CloseGateway extends ConfirmAction {
   }
 
   get title() {
-    return t('Clear Gateway');
+    return t('Detach Gateway');
   }
 
   get buttonText() {
-    return t('Clear Gateway');
+    return t('Detach Gateway');
   }
 
   get actionName() {
-    return t('Clear gateway');
+    return t('Detach gateway');
   }
 
   policy = 'update_router';
