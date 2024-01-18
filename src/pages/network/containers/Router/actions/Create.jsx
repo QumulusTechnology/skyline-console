@@ -204,7 +204,7 @@ export class Create extends ModalAction {
         name: 'openExternalNetwork',
         label: t('Options'),
         type: 'check',
-        content: t('Open External Gateway'),
+        content: t('Attach Gateway'),
       },
       {
         name: 'externalNetwork',
