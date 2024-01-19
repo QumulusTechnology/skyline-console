@@ -51,11 +51,11 @@ export const getRouterColumns = (self) => [
     valueMap: routerStatus,
   },
   {
-    title: t('Open External Gateway'),
-    dataIndex: 'hasExternalGateway',
-    valueRender: 'yesNo',
+    title: t('SNAT Enabled'),
+    dataIndex: 'external_gateway_info',
     isHideable: true,
     sorter: false,
+    render: (value) => (value?.enable_snat ? 'Yes' : 'No' || '-'),
   },
   {
     title: t('External Network'),

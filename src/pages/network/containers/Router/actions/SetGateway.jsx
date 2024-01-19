@@ -50,6 +50,14 @@ export class SetGateway extends ModalAction {
     return t('Attach Gateway');
   }
 
+  get defaultValue() {
+    const value = {
+      enableSNAT: true,
+    };
+
+    return value;
+  }
+
   static allowed = (item) => Promise.resolve(!item.external_gateway_info);
 
   get formItems() {
@@ -59,6 +67,14 @@ export class SetGateway extends ModalAction {
         label: t('Name'),
         type: 'label',
         iconType: 'router',
+      },
+      {
+        name: 'enableSNAT',
+        label: t('Enable SNAT'),
+        type: 'check',
+        tip: t(
+          'Enable SNAT will only have an effect if an external network is set.'
+        ),
       },
       {
         name: 'externalNetwork',
@@ -96,11 +112,12 @@ export class SetGateway extends ModalAction {
   }
 
   onSubmit = (values) => {
-    const { externalNetwork } = values;
+    const { externalNetwork, enableSNAT } = values;
     const { id } = this.item;
     const body = {
       external_gateway_info: {
         network_id: externalNetwork.selectedRowKeys[0],
+        enable_snat: enableSNAT,
       },
     };
     return this.store.edit({ id }, body);

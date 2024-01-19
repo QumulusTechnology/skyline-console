@@ -92,21 +92,18 @@ export class Networks extends Base {
       return {
         ...params,
         project_id: this.currentProjectId,
-        limit: 50,
       };
     }
     if (this.isSharedTab) {
       return {
         ...params,
         shared: true,
-        limit: 50,
       };
     }
     if (this.isExternalTab) {
       return {
         ...params,
         'router:external': true,
-        limit: 50,
       };
     }
     return { ...params };
@@ -134,6 +131,11 @@ export class Networks extends Base {
     }
     return columns;
   }
+
+  fetchDataByPage = async (params) => {
+    await this.store.pureFetchListWithStore(params);
+    this.list.silent = false;
+  };
 
   get searchFilters() {
     const nameFilter = {

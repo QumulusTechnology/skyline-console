@@ -117,6 +117,7 @@ export class Create extends ModalAction {
   get defaultValue() {
     return {
       openExternalNetwork: false,
+      enableSNAT: true,
     };
   }
 
@@ -137,15 +138,21 @@ export class Create extends ModalAction {
       openExternalNetwork,
       externalNetwork,
       hints = {},
+      enableSNAT,
       ...others
     } = values;
-    const extGateway = openExternalNetwork
-      ? {
-          external_gateway_info: {
-            network_id: externalNetwork.selectedRows[0].id,
-          },
-        }
-      : null;
+
+    let extGateway = null;
+
+    if (openExternalNetwork) {
+      extGateway = {
+        external_gateway_info: {
+          network_id: externalNetwork.selectedRows[0].id,
+          enable_snat: enableSNAT,
+        },
+      };
+    }
+
     const availability_zone_hints = hints.selectedRowKeys || [];
     return this.store.create({
       ...others,
@@ -201,10 +208,17 @@ export class Create extends ModalAction {
         ],
       },
       {
-        name: 'openExternalNetwork',
-        label: t('Options'),
+        name: 'enableSNAT',
+        label: t('Enable SNAT'),
         type: 'check',
-        content: t('Attach Gateway'),
+        tip: t(
+          'Enable SNAT will only have an effect if an external network is set.'
+        ),
+      },
+      {
+        name: 'openExternalNetwork',
+        label: t('Attach Gateway'),
+        type: 'check',
       },
       {
         name: 'externalNetwork',
