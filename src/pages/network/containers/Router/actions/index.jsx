@@ -21,6 +21,8 @@ import SetGateway from './SetGateway';
 import ConnectSubnet from './ConnectSubnet';
 import DisconnectSubnet from './DisconnectSubnet';
 // import DisassociateFip from './DisassociateFip';
+import DisableSNAT from './DisableSNAT';
+import EnableSNAT from './EnableSNAT';
 
 const actionConfigs = {
   rowActions: {
@@ -40,6 +42,12 @@ const actionConfigs = {
       },
       {
         action: SetGateway,
+      },
+      {
+        action: DisableSNAT,
+      },
+      {
+        action: EnableSNAT,
       },
       // {
       //   action: AssociateFip,
