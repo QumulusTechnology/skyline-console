@@ -51,7 +51,6 @@ export default class CloseGateway extends ConfirmAction {
         enable_snat: false,
       },
     };
-    console.log(body);
     return globalRouterStore.edit({ id }, body);
   };
 }
