@@ -2451,6 +2451,7 @@
   "The SSH key is a way to remotely log in to the cluster instance. If it’s not set, the value of this in template will be used.": "SSH 密钥是一种远程登录集群实例的方式，如果不设置，将使用模板的值。",
   "The SSH key is a way to remotely log in to the cluster instance. The cloud platform only helps to keep the public key. Please keep your private key properly.": "SSH 密钥是一种远程登录集群实例的方式，云平台只帮助保管公钥，请妥善保管自己的私钥。",
   "The SSH key is a way to remotely log in to the instance. The cloud platform only helps to keep the public key. Please keep your private key properly.": "SSH 密钥是一种远程登录云主机的方式，云平台只帮助保管公钥，请妥善保管自己的私钥。",
+  "The administrative state of the resource, which is up (checked) or down (unchecked)": "",
   "The amphora instance is required for load balancing service setup and is not recommended": "amphora 相关的云主机为负载均衡服务搭建所需，不建议选择",
   "The associated floating IP, virtual adapter, volume and other resources will be automatically disassociated.": "绑定的浮动IP、网卡、云硬盘等资源将自动解绑。",
   "The certificate contains information such as the public key and signature of the certificate. The extension of the certificate is \"pem\" or \"crt\", you can directly enter certificate content or upload certificate file.": "证书包含证书的公钥和签名等信息，证书扩展名为”pem”或”crt”，您可直接输入证书内容或上传证书文件。",

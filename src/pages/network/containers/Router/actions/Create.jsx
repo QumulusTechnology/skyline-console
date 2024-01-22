@@ -118,6 +118,7 @@ export class Create extends ModalAction {
     return {
       openExternalNetwork: false,
       enableSNAT: true,
+      enableAdminState: true,
     };
   }
 
@@ -139,6 +140,7 @@ export class Create extends ModalAction {
       externalNetwork,
       hints = {},
       enableSNAT,
+      enableAdminState,
       ...others
     } = values;
 
@@ -157,6 +159,7 @@ export class Create extends ModalAction {
     return this.store.create({
       ...others,
       ...extGateway,
+      admin_state_up: enableAdminState,
       availability_zone_hints,
     });
   };
@@ -170,6 +173,14 @@ export class Create extends ModalAction {
         type: 'input-name',
         required: true,
         withoutChinese: true,
+      },
+      {
+        name: 'enableAdminState',
+        label: t('Enable Admin State'),
+        type: 'check',
+        tip: t(
+          'The administrative state of the resource, which is up (checked) or down (unchecked)'
+        ),
       },
       {
         name: 'description',
