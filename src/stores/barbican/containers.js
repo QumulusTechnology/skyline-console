@@ -56,18 +56,12 @@ export class ContainersStore extends Base {
   }
 
   async requestListAllByLimit(params, limit) {
-    let hasNext = true;
     let data = [];
-    while (hasNext) {
-      const offset = data.length || '';
-      // eslint-disable-next-line no-await-in-loop
-      const result = await this.requestListByMarker(params, limit, offset);
-      const items = this.getListDataFromResult(result);
-      data = [...data, ...items];
-      if (limit >= result.total || offset >= result.total) {
-        hasNext = false;
-      }
-    }
+    const offset = data.length || '';
+    // eslint-disable-next-line no-await-in-loop
+    const result = await this.requestListByMarker(params, limit, offset);
+    const items = this.getListDataFromResult(result);
+    data = [...data, ...items];
     return data;
   }
 
