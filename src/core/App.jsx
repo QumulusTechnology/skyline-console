@@ -22,6 +22,7 @@ import 'styles/main.less';
 
 import routes from './routes';
 import i18n from './i18n';
+import Chatbot from '../components/Chatbot';
 
 class App extends Component {
   static propTypes = {
@@ -50,9 +51,12 @@ class App extends Component {
 
     return (
       initDone && (
-        <Provider rootStore={rootStore}>
-          <Router history={history}>{renderRoutes(routes)}</Router>
-        </Provider>
+        <>
+          <Chatbot />
+          <Provider rootStore={rootStore}>
+            <Router history={history}>{renderRoutes(routes)}</Router>
+          </Provider>
+        </>
       )
     );
   }
