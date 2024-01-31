@@ -8,7 +8,7 @@ class Chatbot extends React.Component {
     return (
       <>
         <Helmet>
-          <script type="text/javascript" src={Script} />
+          <script type="text/javascript" src={Script()} />
         </Helmet>
       </>
     );

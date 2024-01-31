@@ -48,6 +48,11 @@ export class AuthLayout extends Component {
   }
 
   render() {
+    const chatBot = document.querySelector('#Botsonic-wrapper');
+    if (chatBot) {
+      chatBot.style.display = 'none';
+    }
+
     return (
       <div className={styles.container}>
         <div className={styles.left}>
