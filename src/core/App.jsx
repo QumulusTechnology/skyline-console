@@ -20,9 +20,9 @@ import { Provider } from 'mobx-react';
 // eslint-disable-next-line import/no-unresolved
 import 'styles/main.less';
 
+import Chatbot from 'src/components/Chatbot';
 import routes from './routes';
 import i18n from './i18n';
-import Chatbot from '../components/Chatbot';
 
 class App extends Component {
   static propTypes = {
