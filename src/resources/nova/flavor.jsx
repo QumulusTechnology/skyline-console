@@ -192,8 +192,8 @@ export const getBaseColumns = (self) => [
 ];
 
 export const getMinBaseColumns = (
-  minRamSize,
-  minRDSize,
+  minRamSize = null,
+  minRDSize = null,
   bootFromVolume = false
 ) => [
   {

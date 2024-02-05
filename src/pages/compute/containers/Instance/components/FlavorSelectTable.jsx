@@ -185,10 +185,8 @@ export class FlavorSelectTable extends Component {
 
   getBaseColumns() {
     const { category, arch } = this.state;
-    const {
-      minSize: { imageSize, ramSize },
-      bootFromVolume,
-    } = this.props;
+    const { minSize, bootFromVolume } = this.props;
+    const { ramSize = null, imageSize = null } = minSize || {};
     let base = [...getMinBaseColumns(ramSize, imageSize, bootFromVolume)];
     base[0].title = t('Name');
     base.splice(1, 1);
@@ -251,9 +249,9 @@ export class FlavorSelectTable extends Component {
     onChange && onChange(value);
   };
 
-  disableRow(rec, minSize, bootFromVolume = false) {
-    return (rec.disk < minSize.imageSize && !bootFromVolume) ||
-      Math.ceil(rec.ram / 1024) < minSize.ramSize
+  disableRow(rec, minSize = null, bootFromVolume = false) {
+    return (rec.disk < minSize && minSize.imageSize && !bootFromVolume) ||
+      (Math.ceil(rec.ram / 1024) < minSize && minSize.ramSize)
       ? styles['bg-disable']
       : '';
   }
