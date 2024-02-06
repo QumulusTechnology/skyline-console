@@ -377,7 +377,7 @@ export class BaseTable extends React.Component {
 
   getBaseColumns = (columns) =>
     columns.map((column) => {
-      const { Paragraph } = Typography;
+      const { Paragraph, Text } = Typography;
       const {
         sortable,
         dataIndex,
@@ -429,6 +429,15 @@ export class BaseTable extends React.Component {
       }
       if (copyable) {
         newRender = (value) => {
+          if (isArray(value)) {
+            const textArr = [];
+
+            for (let i = 0; i < value.length; i++) {
+              textArr.push(<Text copyable>{value[i]}</Text>);
+            }
+
+            return <Paragraph>{textArr}</Paragraph>;
+          }
           if (value && value !== '-') {
             return <Paragraph copyable>{value}</Paragraph>;
           }
