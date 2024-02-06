@@ -161,10 +161,6 @@ export default class SoftDelete extends ConfirmAction {
           )}
         </p>
         <p className={styles.mb16}>{this.deleteTip}</p>
-        <div>
-          {this.renderCheckbox(data)}
-          {this.renderCheckboxTip()}
-        </div>
         {this.renderExtra(data)}
       </div>
     );
@@ -194,11 +190,8 @@ export default class SoftDelete extends ConfirmAction {
   };
 
   onSubmit = (item) => {
-    const { id, isHardDeleted = false } = item || this.item;
-    const isShelved = this.isShelved(item || this.item);
-    if (isHardDeleted || isShelved) {
-      return globalServerStore.forceDelete({ id });
-    }
-    return globalServerStore.delete({ id });
+    const { id } = item || this.item;
+
+    return globalServerStore.forceDelete({ id });
   };
 }
