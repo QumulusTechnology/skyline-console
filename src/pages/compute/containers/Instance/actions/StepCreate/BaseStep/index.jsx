@@ -309,9 +309,7 @@ export class BaseStep extends Base {
     };
 
     if (this.networks.length) {
-      const network = this.networks.find(
-        (it, index) => it.name === 'internal' || index === 0
-      );
+      const network = this.networks.find((it) => it.name === 'internal');
 
       data.selectedRows = [network];
       data.selectedRowKeys = [network.id];

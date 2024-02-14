@@ -271,8 +271,19 @@ export class StepCreate extends StepAction {
       source,
       bootableVolume,
       instanceSnapshot,
+      portSelectRows,
     } = this.state.data;
+
     let hasSource = false;
+    let hasPortOrNetwork = false;
+    const networkSource =
+      portSelectRows?.length && networkSelectRows?.length
+        ? 'both'
+        : networkSelectRows?.length
+        ? 'network'
+        : portSelectRows?.length
+        ? 'port'
+        : 'none';
     if (source?.value === 'image') {
       hasSource =
         image && image?.selectedRowKeys?.length && image?.selectedRows?.length;
@@ -288,6 +299,21 @@ export class StepCreate extends StepAction {
         instanceSnapshot?.selectedRows?.length;
     }
 
+    if (networkSource === 'network') {
+      hasPortOrNetwork =
+        networkSelect &&
+        networkSelect?.selectedRowKeys?.length &&
+        networkSelect?.selectedRows?.length &&
+        networkSelectRows?.length &&
+        networks?.length;
+    } else if (networkSource === 'port') {
+      hasPortOrNetwork = portSelectRows?.length;
+    } else if (networkSource === 'both') {
+      hasPortOrNetwork = true;
+    }
+
+    console.log({ networkSelectRows, networkSource, hasPortOrNetwork });
+
     return (
       !hasSource ||
       !flavor ||
@@ -297,11 +323,7 @@ export class StepCreate extends StepAction {
       !keypair?.selectedRowKeys?.length ||
       !keypair?.selectedRows?.length ||
       !name ||
-      !networkSelect ||
-      !networkSelect?.selectedRowKeys?.length ||
-      !networkSelect?.selectedRows?.length ||
-      !networkSelectRows?.length ||
-      !networks?.length ||
+      !hasPortOrNetwork ||
       !physicalNodeType ||
       !securityGroup ||
       !securityGroup?.selectedRowKeys?.length ||
