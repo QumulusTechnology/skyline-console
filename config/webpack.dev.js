@@ -154,6 +154,11 @@ module.exports = (env) => {
             },
           ],
         },
+        {
+          test: /\.mjs$/,
+          include: /node_modules/,
+          type: 'javascript/auto',
+        },
       ],
     },
     plugins: [

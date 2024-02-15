@@ -21,6 +21,8 @@ import { Provider } from 'mobx-react';
 import 'styles/main.less';
 
 import Chatbot from 'src/components/Chatbot';
+import { KeycloakProvider } from 'client/keycloak';
+
 import routes from './routes';
 import i18n from './i18n';
 
@@ -54,7 +56,9 @@ class App extends Component {
         <>
           <Chatbot />
           <Provider rootStore={rootStore}>
-            <Router history={history}>{renderRoutes(routes)}</Router>
+            <Router history={history}>
+              <KeycloakProvider>{renderRoutes(routes)}</KeycloakProvider>
+            </Router>
           </Provider>
         </>
       )

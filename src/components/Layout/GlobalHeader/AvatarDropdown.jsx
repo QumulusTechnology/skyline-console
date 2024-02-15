@@ -18,6 +18,7 @@ import { Menu, Spin, Button, Select } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import i18n from 'core/i18n';
 import ItemActionButtons from 'components/Tables/Base/ItemActionButtons';
+import { useKeycloak } from 'client/keycloak';
 import Password from './Password';
 import Token from './Token';
 import OpenRc from './OpenRc';
@@ -48,7 +49,9 @@ export class AvatarDropdown extends React.Component {
     if (e && e.preventDefault) {
       e.preventDefault();
     }
-    this.rootStore.logout();
+
+    useKeycloak.callLogout();
+    // this.rootStore.logout();
   };
 
   // eslint-disable-next-line no-unused-vars
