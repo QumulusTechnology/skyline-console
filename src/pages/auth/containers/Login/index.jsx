@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import React, { Component } from 'react';
-import { Input, Button, Select, Row, Col } from 'antd';
+import { Input, Button, Select, Row, Col, Spin } from 'antd';
 import { inject, observer } from 'mobx-react';
 import { Link } from 'react-router-dom';
 import { InfoCircleFilled } from '@ant-design/icons';
@@ -53,7 +53,23 @@ export class Login extends Component {
 
   async getSSO() {
     try {
-      this.store.fetchSSO();
+      this.setState({
+        fetchingSSO: true,
+      });
+
+      await this.store.fetchSSO();
+
+      const { sso } = globalSkylineStore;
+
+      if (sso?.enable_sso) {
+        this.setState({
+          loginTypeOption: this.SSOOptions[0],
+        });
+      }
+
+      this.setState({
+        fetchingSSO: false,
+      });
     } catch (e) {
       console.log(e);
     }
@@ -160,7 +176,7 @@ export class Login extends Component {
 
   get defaultValue() {
     const data = {
-      loginType: 'password',
+      loginType: this.SSOOptions[0],
     };
     if (this.regions.length === 1) {
       data.region = this.regions[0].value;
@@ -237,20 +253,24 @@ export class Login extends Component {
     };
     const submitItem = {
       name: 'submit',
-      render: () => (
-        <Row gutter={8}>
-          <Col span={12}>
-            <Button
-              loading={loading}
-              type="primary"
-              htmlType="submit"
-              className="login-form-button"
-            >
-              {t('Log in')}
-            </Button>
-          </Col>
-        </Row>
-      ),
+      render: () => {
+        const {
+          loginTypeOption: { protocol = null },
+        } = this.state;
+
+        const isOpenId = protocol && protocol === 'openid';
+
+        return (
+          <Button
+            loading={loading}
+            type="primary"
+            htmlType="submit"
+            style={isOpenId ? { width: '100%' } : {}}
+          >
+            {isOpenId ? t('Keycloak') : t('Log in')}
+          </Button>
+        );
+      },
     };
     const namePasswordItems = [
       errorItem,
@@ -388,19 +408,37 @@ export class Login extends Component {
     return null;
   }
 
+  renderForm() {
+    const { fetchingSSO } = this.state;
+    return !fetchingSSO ? (
+      <SimpleForm
+        formItems={this.formItems}
+        name="normal_login"
+        className={styles['login-form']}
+        initialValues={this.defaultValue}
+        onFinish={this.onFinish}
+        formref={this.formRef}
+        size="large"
+      />
+    ) : (
+      <div
+        style={{
+          height: '100px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Spin />
+      </div>
+    );
+  }
+
   render() {
     return (
       <>
         <h1 className={styles.welcome}>{this.productName}</h1>
-        <SimpleForm
-          formItems={this.formItems}
-          name="normal_login"
-          className={styles['login-form']}
-          initialValues={this.defaultValue}
-          onFinish={this.onFinish}
-          formref={this.formRef}
-          size="large"
-        />
+        {this.renderForm()}
         {this.renderExtra()}
       </>
     );
