@@ -45,7 +45,7 @@ export class EditForm extends ModalAction {
     const { name, email, phone, real_name, description, domain, domain_id } =
       this.item;
     const formattedPhone = parsePhoneNumberFromString(phone || '', 'CN') || {
-      countryCallingCode: '86',
+      countryCallingCode: '1',
       nationalNumber: '',
     };
     const { countryCallingCode, nationalNumber } = formattedPhone;
@@ -97,20 +97,17 @@ export class EditForm extends ModalAction {
         label: t('Email'),
         type: 'input',
         validator: emailValidate,
-        required: true,
       },
       {
         name: 'phone',
         label: t('Phone'),
         type: 'phone',
-        required: true,
         validator: phoneNumberValidate,
       },
       {
         name: 'real_name',
         label: t('Real Name'),
         type: 'input',
-        required: true,
       },
       {
         name: 'domainName',

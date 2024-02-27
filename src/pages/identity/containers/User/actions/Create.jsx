@@ -29,6 +29,7 @@ import {
 import {
   statusTypes,
   getDomainFormItem,
+  getDomainOptions,
   nameDomainColumns,
   transferFilterOption,
 } from 'resources/keystone/domain';
@@ -254,7 +255,10 @@ export class Create extends FormAction {
       wrapperCol,
       colNum: 2,
     };
-    const domainFormItem = getDomainFormItem(this);
+    const domainFormItem = getDomainFormItem(
+      this,
+      !(getDomainOptions(this).length > 1)
+    );
     const currentDomainFormItem = {
       ...domainFormItem,
       ...cols,
@@ -302,7 +306,12 @@ export class Create extends FormAction {
         otherRule: getPasswordOtherRule('confirmPassword'),
         ...cols,
       },
-      currentDomainFormItem,
+      {
+        name: 'description',
+        label: t('Description'),
+        type: 'textarea',
+        ...cols,
+      },
       {
         name: 'enabled',
         label: t('Status'),
@@ -311,12 +320,7 @@ export class Create extends FormAction {
         options: statusTypes,
         ...cols,
       },
-      {
-        name: 'description',
-        label: t('Description'),
-        type: 'textarea',
-        ...cols,
-      },
+      currentDomainFormItem,
       {
         name: 'real_name',
         label: t('Real Name'),

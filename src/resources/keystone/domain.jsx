@@ -40,7 +40,7 @@ export const getCheckedOptions = () => {
   }));
 };
 
-export const getDomainFormItem = (self) => {
+export const getDomainFormItem = (self, hidden = false) => {
   return {
     name: 'domain_id',
     label: t('Affiliated Domain'),
@@ -54,6 +54,7 @@ export const getDomainFormItem = (self) => {
         domain: e,
       });
     },
+    hidden,
     required: true,
   };
 };

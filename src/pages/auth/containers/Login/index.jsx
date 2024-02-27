@@ -192,7 +192,7 @@ export class Login extends Component {
     const regionItem = {
       name: 'region',
       required: true,
-      hidden: true,
+      hidden: !(this.regions.length > 1),
       message: t('Please select your Region!'),
       render: () => (
         <Select placeholder={t('Select a region')} options={this.regions} />
@@ -201,7 +201,7 @@ export class Login extends Component {
     const domainItem = {
       name: 'domain',
       required: true,
-      hidden: true,
+      hidden: !(this.domains.length > 1),
       message: t('Please select your Domain!'),
       render: () => (
         <Select placeholder={t('Select a domain')} options={this.domains} />
