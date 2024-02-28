@@ -158,7 +158,7 @@ export class Login extends Component {
   }
 
   onLoginTypeChange = (value, option) => {
-    this.setState({ loginTypeOption: option });
+    this.setState({ loginTypeOption: option, error: false, message: '' });
   };
 
   get currentLoginType() {
@@ -298,7 +298,7 @@ export class Login extends Component {
         return [typeItem, ...namePasswordItems, submitItem];
       }
 
-      return [typeItem, submitItem];
+      return [typeItem, submitItem, errorItem];
     }
     return [...namePasswordItems, submitItem];
   }
@@ -339,7 +339,23 @@ export class Login extends Component {
 
   onFinish = (values) => {
     if (this.currentLoginType === 'sso') {
-      document.location.href = this.currentSSOLink;
+      const {
+        keystoneUrl = null,
+        keycloakUrl = null,
+        keycloakRealm = null,
+      } = GLOBAL_VARIABLES;
+
+      if (!keystoneUrl || !keycloakRealm || !keycloakRealm) {
+        this.setState({
+          loading: false,
+          error: true,
+          message: 'keystone / keycloak local config missing.',
+        });
+      } else {
+        const keystoneOidc = `${keystoneUrl}/redirect_uri?iss=${keycloakUrl}/realms/${keycloakRealm}`;
+        document.location.href = `${keystoneOidc}&target_link_uri=${this.currentSSOLink}`;
+      }
+
       return;
     }
     this.setState({
@@ -376,6 +392,13 @@ export class Login extends Component {
         'If you are not authorized to access any project, or if the project you are involved in has been deleted or disabled, contact the platform administrator to reassign the project'
       );
     }
+
+    if (message.includes('keystone / keycloak local config missing.')) {
+      return t(
+        'Keystone or Keycloak URL and Realm is not defined. Please contact your Administrator.'
+      );
+    }
+
     return t('Username or password is incorrect');
   }
 
