@@ -8,3 +8,8 @@ globalVariables:
     - en
     - zh-hans
     - ko-kr
+  product_name: { en: 'Qumulus Cloud Platform' }
+  title: { en: 'Qumulus Cloud Platform' }
+  keystoneUrl: https://cloud.qumulus.io:5000
+  keycloakUrl: https://auth.qumulus.io
+  keycloakRealm: qumulus
