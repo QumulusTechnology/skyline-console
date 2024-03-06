@@ -54,8 +54,12 @@ export class Listeners extends Base {
   }
 
   get actionConfigs() {
-    const { provisioning_status } = this.props.detail;
-    if (provisioning_status !== 'ACTIVE') {
+    const { detail = null } = this.props;
+    if (
+      detail &&
+      detail?.provisioning_status &&
+      detail?.provisioning_status !== 'ACTIVE'
+    ) {
       return emptyActionConfig;
     }
     if (this.isAdminPage) {

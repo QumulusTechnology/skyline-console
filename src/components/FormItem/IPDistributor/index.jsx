@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import React from 'react';
-import { Form, Button, Row, Col } from 'antd';
+import { Form, Button, Row, Col, Spin } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import Item from 'components/FormItem/IPDistributor/Item';
 import { ipValidate } from 'utils/validate';
@@ -21,7 +21,12 @@ import { ipValidate } from 'utils/validate';
 const { isIPv4, isIpv6 } = ipValidate;
 
 const IPDistributor = ({ componentProps, formItemProps }) => {
-  const { subnets, maxNumber = 10, formRef } = componentProps;
+  const {
+    subnets,
+    maxNumber = 10,
+    formRef,
+    isLoading = false,
+  } = componentProps;
   const { name, value = [], onChange } = formItemProps;
   const subnetsAvailable = subnets
     .map((item) => ({ label: item.name, value: item.id, ...item }))
@@ -36,7 +41,9 @@ const IPDistributor = ({ componentProps, formItemProps }) => {
   return (
     <>
       <Form.Item {...formItemProps}>
-        {subnetsAvailable.length === 0 ? (
+        {isLoading ? (
+          <Spin />
+        ) : subnetsAvailable.length === 0 ? (
           <div>{t('The selected network has no subnet')}</div>
         ) : (
           <Form.List name={name}>
