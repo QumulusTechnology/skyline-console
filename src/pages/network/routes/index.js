@@ -29,7 +29,7 @@ import PortDetail from '../containers/Port/Detail';
 import QoSPolicy from '../containers/QoSPolicy';
 import AdminQoSPolicy from '../containers/QoSPolicy/QoSPolicy';
 import QoSPolicyDetail from '../containers/QoSPolicy/Detail';
-import LoadBalancers from '../containers/LoadBalancers/LoadBalancerInstance';
+import LoadBalancers from '../containers/LoadBalancers';
 import StepCreateLoadBalancer from '../containers/LoadBalancers/LoadBalancerInstance/actions/StepCreate';
 import LoadBalancerDetail from '../containers/LoadBalancers/LoadBalancerInstance/Detail';
 import ListenerDetail from '../containers/LoadBalancers/Listener/Detail';

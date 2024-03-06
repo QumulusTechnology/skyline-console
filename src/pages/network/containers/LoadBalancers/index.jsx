@@ -15,6 +15,7 @@
 import { observer, inject } from 'mobx-react';
 import Base from 'containers/TabList';
 import LoadBalancerInstance from './LoadBalancerInstance';
+import Listener from './Listener';
 
 export class Network extends Base {
   get tabs() {
@@ -24,11 +25,11 @@ export class Network extends Base {
         key: 'loadBalancersInstances',
         component: LoadBalancerInstance,
       },
-      // {
-      //   title: t('Shared Network'),
-      //   key: 'sharedNetwork',
-      //   component: SharedNetwork,
-      // },
+      {
+        title: t('Listeners'),
+        key: 'listeners',
+        component: Listener,
+      },
     ];
     return tabs;
   }

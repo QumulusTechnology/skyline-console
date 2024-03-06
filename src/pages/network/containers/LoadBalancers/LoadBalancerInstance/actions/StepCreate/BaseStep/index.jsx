@@ -46,12 +46,13 @@ export class BaseStep extends Base {
 
   allowed = () => Promise.resolve();
 
-  handleOwnedNetworkChange = (value) => {
+  handleOwnedNetworkChange = async (value) => {
     const { network_id: old_network_id } = this.state;
     const new_network_id = value.selectedRowKeys[0];
     this.setState(
       {
         network_id: new_network_id,
+        subnetsLoading: true,
       },
       () => {
         // Reset owned subnets after change owned network
@@ -64,7 +65,12 @@ export class BaseStep extends Base {
         }
       }
     );
-    this.getSubnets(new_network_id);
+
+    await this.getSubnets(new_network_id);
+
+    this.setState({
+      subnetsLoading: false,
+    });
   };
 
   async getSubnets(value) {
@@ -83,6 +89,7 @@ export class BaseStep extends Base {
     const {
       network_id,
       subnetDetails = [],
+      subnetsLoading = false,
     } = this.state;
     return [
       {
@@ -113,6 +120,7 @@ export class BaseStep extends Base {
         maxNumber: 1,
         hidden: !network_id,
         required: true,
+        isLoading: subnetsLoading,
       },
       {
         name: 'admin_state_enabled',
