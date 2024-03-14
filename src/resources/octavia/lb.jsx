@@ -113,11 +113,19 @@ export const listenerProtocols = [
     value: 'HTTP',
   },
   {
+    label: 'HTTPS',
+    value: 'HTTPS',
+  },
+  {
+    label: 'SCTP',
+    value: 'SCTP',
+  },
+  {
     label: 'TCP',
     value: 'TCP',
   },
   {
-    label: 'HTTPS',
+    label: 'TERMINATED_HTTPS',
     value: 'TERMINATED_HTTPS',
   },
   {
@@ -130,14 +138,86 @@ export const poolProtocols = [
   {
     label: 'HTTP',
     value: 'HTTP',
+    listener: {
+      http: 'valid',
+      https: 'invalid',
+      sctp: 'invalid',
+      tcp: 'valid',
+      terminatedHTTPS: 'valid',
+      udp: 'invalid',
+    },
+  },
+  {
+    label: 'HTTPS',
+    value: 'HTTPS',
+    listener: {
+      http: 'invalid',
+      https: 'valid',
+      sctp: 'invalid',
+      tcp: 'valid',
+      terminatedHTTPS: 'invalid',
+      udp: 'invalid',
+    },
+  },
+  {
+    label: 'PROXY',
+    value: 'PROXY',
+    listener: {
+      http: 'valid',
+      https: 'valid',
+      sctp: 'invalid',
+      tcp: 'valid',
+      terminatedHTTPS: 'valid',
+      udp: 'invalid',
+    },
+  },
+  {
+    label: 'PROXYV2',
+    value: 'PROXYV2',
+    listener: {
+      http: 'valid',
+      https: 'valid',
+      sctp: 'invalid',
+      tcp: 'valid',
+      terminated_https: 'valid',
+      udp: 'invalid',
+    },
+  },
+  {
+    label: 'SCTP',
+    value: 'SCTP',
+    listener: {
+      http: 'invalid',
+      https: 'invalid',
+      sctp: 'valid',
+      tcp: 'invalid',
+      terminatedHTTPS: 'invalid',
+      udp: 'invalid',
+    },
   },
   {
     label: 'TCP',
     value: 'TCP',
+    listener: {
+      http: 'invalid',
+      https: 'valid',
+      sctp: 'invalid',
+      tcp: 'valid',
+      terminatedHTTPS: 'invalid',
+      udp: 'invalid',
+    },
   },
   {
     label: 'UDP',
     value: 'UDP',
+    listener: {
+      http: 'invalid',
+      https: 'invalid',
+      sctp: 'invalid',
+      tcp: 'invalid',
+      terminatedHTTPS: 'invalid',
+      udp: 'valid',
+    },
   },
 ];
 
@@ -145,20 +225,115 @@ export const healthProtocols = [
   {
     label: 'HTTP',
     value: 'HTTP',
+    pool: {
+      http: 'valid',
+      https: 'valid',
+      proxy: 'valid',
+      proxyv2: 'valid',
+      sctp: 'valid',
+      tcp: 'valid',
+      udp: 'valid',
+    },
+  },
+  {
+    label: 'HTTPS',
+    value: 'HTTPS',
+    pool: {
+      http: 'valid',
+      https: 'valid',
+      proxy: 'valid',
+      proxyv2: 'valid',
+      sctp: 'invalid',
+      tcp: 'valid',
+      udp: 'invalid',
+    },
+  },
+  {
+    label: 'PING',
+    value: 'PING',
+    pool: {
+      http: 'valid',
+      https: 'valid',
+      proxy: 'valid',
+      proxyv2: 'valid',
+      sctp: 'invalid',
+      tcp: 'valid',
+      udp: 'invalid',
+    },
+  },
+  {
+    label: 'SCTP',
+    value: 'SCTP',
+    pool: {
+      http: 'invalid',
+      https: 'invalid',
+      proxy: 'invalid',
+      proxyv2: 'invalid',
+      sctp: 'valid',
+      tcp: 'invalid',
+      udp: 'valid',
+    },
   },
   {
     label: 'TCP',
     value: 'TCP',
+    pool: {
+      http: 'valid',
+      https: 'valid',
+      proxy: 'valid',
+      proxyv2: 'valid',
+      sctp: 'valid',
+      tcp: 'valid',
+      udp: 'valid',
+    },
   },
   {
-    label: 'UDP',
+    label: 'TLS-HELLO',
+    value: 'TLS-HELLO',
+    pool: {
+      http: 'valid',
+      https: 'valid',
+      proxy: 'valid',
+      proxyv2: 'valid',
+      sctp: 'invalid',
+      tcp: 'valid',
+      udp: 'invalid',
+    },
+  },
+  {
+    label: 'UDP-CONNECT',
     value: 'UDP-CONNECT',
+    pool: {
+      http: 'invalid',
+      https: 'invalid',
+      proxy: 'invalid',
+      proxyv2: 'invalid',
+      sctp: 'valid',
+      tcp: 'invalid',
+      udp: 'valid',
+    },
+  },
+];
+
+export const sessionPersitence = [
+  {
+    label: 'SOURCE_IP',
+    value: 'SOURCE_IP',
+  },
+  {
+    label: 'HTTP_COOKIE',
+    value: 'HTTP_COOKIE',
+  },
+  {
+    label: 'APP_COOKIE',
+    value: 'APP_COOKIE',
   },
 ];
 
 export const INSERT_HEADERS = {
   'X-Forwarded-For': t('Specify the client IP address'),
   'X-Forwarded-Port': t('Specify the listener port'),
+  'X-Forwarded-Proto': '',
 };
 
 export const insertHeaderOptions = Object.keys(INSERT_HEADERS).map((key) => ({
@@ -182,11 +357,12 @@ export const insertHeaderDesc = t(
   'The optional headers to insert into the request before it is sent to the backend member.'
 );
 
-export const getListenerInsertHeadersFormItem = () => {
+export const getListenerInsertHeadersFormItem = (hidden = false) => {
   return {
     name: 'insert_headers',
     label: t('Custom Headers'),
     type: 'check-group',
+    hidden,
     extra: insertHeaderDesc,
     tip: insertHeaderTips,
     options: insertHeaderOptions,
