@@ -31,7 +31,9 @@ export class HealthMonitorStep extends Base {
 
   get filteredProtocolOptions() {
     const { context: { listener_protocol = '' } = {} } = this.props;
-    return healthProtocols.filter((it) => listener_protocol.includes(it.label));
+    return healthProtocols.filter(
+      (it) => it.pool[listener_protocol.toLowerCase()] === 'valid'
+    );
   }
 
   get defaultValue() {
@@ -73,6 +75,14 @@ export class HealthMonitorStep extends Base {
         hidden: !enableHealthMonitor,
       },
       {
+        name: 'health_type',
+        label: t('Health Monitor Type'),
+        type: 'select',
+        options: this.filteredProtocolOptions,
+        required: true,
+        hidden: !enableHealthMonitor,
+      },
+      {
         name: 'health_delay',
         label: t('Health Monitor Delay'),
         type: 'input-number',
@@ -106,14 +116,6 @@ export class HealthMonitorStep extends Base {
         extra: t(
           'The timeout period of waiting for the return of the health check request, the check timeout will be judged as a check failure'
         ),
-        required: true,
-        hidden: !enableHealthMonitor,
-      },
-      {
-        name: 'health_type',
-        label: t('Health Monitor Type'),
-        type: 'select',
-        options: this.filteredProtocolOptions,
         required: true,
         hidden: !enableHealthMonitor,
       },

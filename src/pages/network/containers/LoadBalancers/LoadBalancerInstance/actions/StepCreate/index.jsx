@@ -16,6 +16,7 @@ import { inject, observer } from 'mobx-react';
 import { StepAction } from 'containers/Action';
 import globalLbaasStore from 'stores/octavia/loadbalancer';
 import { getInsertHeadersValueFromForm } from 'resources/octavia/lb';
+import { isNumber } from 'lodash';
 import BaseStep from './BaseStep';
 import ListenerStep from '../../../StepCreateComponents/ListenerStep';
 import PoolStep from '../../../StepCreateComponents/PoolStep';
@@ -146,11 +147,57 @@ export class StepCreate extends StepAction {
       if (i.indexOf('listener') === 0) {
         listenerData[i.replace('listener_', '')] = values[i];
       } else if (i.indexOf('pool') === 0) {
-        poolData[i.replace('pool_', '')] = values[i];
+        poolData[i.replace('pool_', '')] = values[i] || null;
       } else if (i.indexOf('health') === 0) {
         healthMonitorData[i.replace('health_', '')] = values[i];
       }
     });
+
+    // conditional listeners options
+    if (listener_protocol === 'UDP' || listener_protocol === 'SCTP') {
+      delete listenerData.timeout_client_data;
+      delete listenerData.timeout_tcp_inspect;
+      delete listenerData.timeout_member_connect;
+      delete listenerData.timeout_member_data;
+    }
+
+    if (
+      listener_protocol !== 'HTTPS' &&
+      listener_protocol !== 'TERMINATED_HTTPS'
+    ) {
+      delete listenerData.tls_ciphers;
+    }
+
+    if (
+      listener_protocol !== 'HTTP' &&
+      listener_protocol !== 'TERMINATED_HTTPS'
+    ) {
+      delete listenerData.insert_headers;
+    }
+
+    // conditional session persistence
+    if (rest.psp_type) {
+      const {
+        psp_type,
+        psp_cookie_name,
+        psp_persistence_timeout,
+        psp_persistence_granularity,
+      } = rest;
+
+      poolData.session_persistence = { type: psp_type };
+
+      if (psp_cookie_name) {
+        poolData.session_persistence.cookie_name = psp_cookie_name;
+      }
+      if (isNumber(psp_persistence_timeout)) {
+        poolData.session_persistence.persistence_timeout =
+          psp_persistence_timeout;
+      }
+      if (psp_persistence_granularity) {
+        poolData.session_persistence.persistence_granularity =
+          psp_persistence_granularity;
+      }
+    }
 
     if (enableHealthMonitor) {
       poolData.healthmonitor = healthMonitorData;

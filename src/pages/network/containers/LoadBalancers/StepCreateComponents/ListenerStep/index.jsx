@@ -63,12 +63,40 @@ export class ListenerStep extends Base {
     return (this.containersStore.list.data || []).filter((it) => !!it.domain);
   }
 
+  get showFieldByProtocol() {
+    const { listener_protocol } = this.state;
+
+    return {
+      timeout:
+        !listener_protocol ||
+        (listener_protocol !== 'UDP' && listener_protocol !== 'SCTP'),
+      tlsCipher:
+        listener_protocol &&
+        (listener_protocol === 'HTTPS' ||
+          listener_protocol === 'TERMINATED_HTTPS'),
+      headers:
+        listener_protocol &&
+        (listener_protocol === 'HTTP' ||
+          listener_protocol === 'TERMINATED_HTTPS'),
+    };
+  }
+
   get defaultValue() {
     return {
       listener_ssl_parsing_method: 'one-way',
       listener_sni_enabled: false,
       listener_connection_limit: -1,
       listener_admin_state_up: true,
+      ...this.defaultTimeoutValues,
+    };
+  }
+
+  get defaultTimeoutValues() {
+    return {
+      listener_timeout_client_data: 50000,
+      listener_timeout_tcp_inspect: 0,
+      listener_timeout_member_connect: 5000,
+      listener_timeout_member_data: 50000,
     };
   }
 
@@ -80,6 +108,13 @@ export class ListenerStep extends Base {
     ];
   }
 
+  onChangeProtocol = (e) => {
+    this.updateContext({
+      pool_protocol: e,
+      health_type: e,
+    });
+  };
+
   allowed = () => Promise.resolve();
 
   get formItems() {
@@ -89,7 +124,9 @@ export class ListenerStep extends Base {
       listener_sni_enabled,
     } = this.state;
 
-    const insertHeadersFormItem = getListenerInsertHeadersFormItem();
+    const insertHeadersFormItem = getListenerInsertHeadersFormItem(
+      !this.showFieldByProtocol.headers
+    );
     return [
       {
         name: 'listener_name',
@@ -107,12 +144,7 @@ export class ListenerStep extends Base {
         label: t('Listener Protocol'),
         type: 'select',
         options: listenerProtocols,
-        onChange: () => {
-          this.updateContext({
-            pool_protocol: '',
-            health_type: '',
-          });
-        },
+        onChange: this.onChangeProtocol,
         required: true,
       },
       {
@@ -192,12 +224,59 @@ export class ListenerStep extends Base {
         required: true,
       },
       {
+        type: this.showFieldByProtocol.timeout ? 'divider' : '',
+      },
+      {
+        name: 'listener_timeout_client_data',
+        label: t('Client Data Timeout'),
+        type: 'input-number',
+        required: true,
+        hidden: !this.showFieldByProtocol.timeout,
+      },
+      {
+        name: 'listener_timeout_tcp_inspect',
+        label: t('TCP Inspect Timeout'),
+        type: 'input-number',
+        required: true,
+        hidden: !this.showFieldByProtocol.timeout,
+      },
+      {
+        name: 'listener_timeout_member_connect',
+        label: t('Member Connect Timeout'),
+        type: 'input-number',
+        required: true,
+        hidden: !this.showFieldByProtocol.timeout,
+      },
+      {
+        name: 'listener_timeout_member_data',
+        label: t('Member Data Timeout'),
+        type: 'input-number',
+        required: true,
+        hidden: !this.showFieldByProtocol.timeout,
+      },
+      {
+        type: this.showFieldByProtocol.timeout ? 'divider' : '',
+      },
+      {
         name: 'listener_connection_limit',
         label: t('Listener Connection Limit'),
         type: 'input-number',
         min: -1,
         extra: t('-1 means no connection limit'),
         required: true,
+        hidden: !this.showFieldByProtocol.timeout,
+      },
+      {
+        name: 'listener_allowed_cidrs',
+        label: t('Allowed Cidrs'),
+        type: 'textarea',
+        extra: t('0.0.0.0/0'),
+      },
+      {
+        name: 'listener_tls_ciphers',
+        label: t('TLS Cipher String'),
+        type: 'textarea',
+        hidden: !this.showFieldByProtocol.tlsCipher,
       },
       {
         name: 'listener_admin_state_up',
