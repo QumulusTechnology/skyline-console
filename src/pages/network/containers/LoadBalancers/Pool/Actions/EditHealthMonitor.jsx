@@ -13,50 +13,93 @@
 // limitations under the License.
 
 import { inject, observer } from 'mobx-react';
-import Base from 'components/Form';
-import { healthProtocols, httpMethods } from 'resources/octavia/lb';
+import { ModalAction } from 'containers/Action';
+import healthMonitorStore from 'stores/octavia/health-monitor';
+import { httpMethods, healthProtocols } from 'resources/octavia/lb';
 
-export class HealthMonitorStep extends Base {
-  init() {
-    const { context: { health_type = "" } } = this.props;
-    this.state.type = health_type
+export class EditHealthMonitor extends ModalAction {
+  async init() {
+    this.state = {
+      type: this.item.type
+    }
+
+    this.store = healthMonitorStore;
+    await this.getHealthMonitorDetail();
   }
 
-  get title() {
-    return 'Health Monitor Detail';
+  static id = 'health-monitor-edit';
+
+  static title = t('Edit Health Monitor');
+
+  static buttonText = t('Edit');
+
+  static get modalSize() {
+    return 'large';
+  }
+
+  getModalSize() {
+    return 'large';
   }
 
   get name() {
-    return 'Health Monitor Detail';
+    return t('edit health monitor`');
   }
 
-  get isStep() {
-    return true;
+  get labelCol() {
+    return {
+      xs: { span: 8 },
+      sm: { span: 8 },
+    };
+  }
+
+  get isSubmitting() {
+    return this.store.isSubmitting;
+  }
+
+  get defaultValue() {
+    const { id, name, type, delay, max_retries, timeout, admin_state_up, expected_codes, url_path, http_method } = this.item;
+
+    return {
+      id,
+      name,
+      type,
+      delay,
+      max_retries,
+      timeout,
+      admin_state_up,
+      expected_codes,
+      url_path,
+      http_method
+    };
   }
 
   get filteredProtocolOptions() {
-    const { context: { listener_protocol = '', pool_protocol = '' } = {} } = this.props;
+    const { containerProps: { detail = null } } = this.props;
 
     return healthProtocols.filter(
-      (it) => it.pool[listener_protocol ? listener_protocol.toLowerCase() : pool_protocol.toLowerCase()] === 'valid'
+      (it) => it.pool[detail?.protocol ? detail.protocol.toLowerCase() : 'http'] === 'valid'
     );
   }
-  
-  get defaultValue() {
-    const values = {
-      enableHealthMonitor: true,
-      health_delay: 5,
-      health_timeout: 3,
-      health_max_retries: 3,
-      health_type: '',
-      monitor_admin_state_up: true,
-    }
 
-    return values;
+  get showHTTPFields() {
+    const { type } = this.state;
+    return type === 'HTTP' || type === 'HTTPS'
   }
 
-  onChangeType = (type) => {
-    this.setState({type})
+  static policy = 'os_load-balancer_api:healthmonitor:put';
+
+  static allowed = () => true;
+
+  async getHealthMonitorDetail() {
+    this.setState({ pool: this.item }, () => {
+      this.updateDefaultValue();
+    });
+  }
+
+  onChangeProtocol = (type) => {
+    this.setState({
+      type
+    });
   }
 
   validateExpectedCodes = (rule, value) => {
@@ -81,64 +124,38 @@ export class HealthMonitorStep extends Base {
     });
   };
 
-  allowed = () => Promise.resolve();
-
-  get showHTTPFields() {
-    const { type } = this.state;
-    return type === 'HTTP' || type === 'HTTPS'
-  }
-
   get formItems() {
-    const { health_delay, enableHealthMonitor } = this.state;
+
+    const renderDivider = this.showHTTPFields ? {
+      type: 'divider'
+    } : {};
 
     return [
       {
-        name: 'enableHealthMonitor',
-        label: t('Enable Health Monitor'),
-        type: 'radio',
-        options: [
-          {
-            label: t('Yes'),
-            value: true,
-          },
-          {
-            label: t('No'),
-            value: false,
-          },
-        ],
-      },
-      {
-        name: 'health_name',
+        name: 'name',
         label: t('Health Monitor Name'),
         type: 'input-name',
         required: true,
-        hidden: !enableHealthMonitor,
       },
       {
-        name: 'health_type',
+        name: 'type',
         label: t('Health Monitor Type'),
         type: 'select',
         options: this.filteredProtocolOptions,
         required: true,
-        hidden: !enableHealthMonitor,
-        onChange: this.onChangeType
+        disabled: true,
+        onChange: this.onChangeProtocol
       },
       {
-        name: 'health_delay',
+        name: 'delay',
         label: t('Health Monitor Delay'),
         type: 'input-number',
-        onChange: (val) => {
-          this.setState({
-            health_delay: val,
-          });
-        },
         min: 0,
         extra: t('Maximum interval time for each health check response'),
         required: true,
-        hidden: !enableHealthMonitor,
       },
       {
-        name: 'health_max_retries',
+        name: 'max_retries',
         label: t('Health Monitor Max Retries'),
         type: 'input-number',
         min: 1,
@@ -147,28 +164,26 @@ export class HealthMonitorStep extends Base {
           'That is, after how many consecutive failures of the health check, the health check status of the back-end cloud server is changed from normal to abnormal'
         ),
         required: true,
-        hidden: !enableHealthMonitor,
       },
       {
-        name: 'health_timeout',
+        name: 'timeout',
         label: t('Health Monitor Timeout'),
         type: 'input-number',
-        min: health_delay || 0,
+        min: 0,
         extra: t(
           'The timeout period of waiting for the return of the health check request, the check timeout will be judged as a check failure'
         ),
         required: true,
-        hidden: !enableHealthMonitor,
       },
       {
-        name: 'monitor_admin_state_up',
+        name: 'admin_state_up',
         label: t('Admin State Up'),
         type: 'switch',
         tip: t('Defines the admin state of the health monitor.'),
-        hidden: !enableHealthMonitor,
       },
+      renderDivider,
       {
-        name: 'health_http_method',
+        name: 'http_method',
         label: t('HTTP Method'),
         type: 'select',
         options: httpMethods,
@@ -176,22 +191,32 @@ export class HealthMonitorStep extends Base {
         required: this.showHTTPFields
       },
       {
-        name: 'health_expected_codes',
+        name: 'expected_codes',
         label: t('Expected Codes'),
         type: 'input',
         hidden: !this.showHTTPFields,
         required: this.showHTTPFields,
-        validator: this.validateExpectedCodes
+        validator: this.validateExpectedCodes,
+        placeholder: '200 or 200-300 or 200,300'
       },
       {
-        name: 'health_url_path',
+        name: 'url_path',
         label: t('URL Path'),
         type: 'input',
         hidden: !this.showHTTPFields,
-        required: this.showHTTPFields
+        required: this.showHTTPFields,
+        placeholder: '/'
       },
     ];
   }
+
+  onSubmit = (values) => {
+    const { id } = this.item;
+
+    delete values.type;
+
+    return this.store.edit({ id }, values);
+  };
 }
 
-export default inject('rootStore')(observer(HealthMonitorStep));
+export default inject('rootStore')(observer(EditHealthMonitor));

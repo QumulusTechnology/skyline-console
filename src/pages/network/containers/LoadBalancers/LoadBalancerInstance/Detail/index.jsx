@@ -17,6 +17,7 @@ import Base from 'containers/TabDetail';
 import { LbaasStore } from 'stores/octavia/loadbalancer';
 import { provisioningStatusCodes } from 'resources/octavia/lb';
 import Listeners from '../../Listener';
+import Pool from '../../Pool';
 import { actionConfigs, adminActions } from '../actions';
 
 export class LoadBalancerDetail extends Base {
@@ -96,6 +97,11 @@ export class LoadBalancerDetail extends Base {
         key: 'listener',
         component: Listeners,
       },
+      {
+        title: t('Pool'),
+        key: 'pool',
+        component: Pool
+      }
     ];
     return tabs;
   }

@@ -392,6 +392,13 @@ const renderMenu = (t) => {
               level: 2,
               routePath: '/network/load-balancers/:loadBalancerId/listener/:id',
             },
+            {
+              path: /^\/network\/load-balancers\/.[^/]+\/pool\/.[^/]+$/,
+              name: t('Pool Detail'),
+              key: 'lbPoolDetail',
+              level: 2,
+              routePath: '/network/load-balancers/:loadBalancerId/pool/:id',
+            },
           ],
         },
         {

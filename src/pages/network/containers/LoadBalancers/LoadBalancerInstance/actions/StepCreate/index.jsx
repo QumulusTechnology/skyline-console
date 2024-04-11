@@ -149,7 +149,11 @@ export class StepCreate extends StepAction {
       } else if (i.indexOf('pool') === 0) {
         poolData[i.replace('pool_', '')] = values[i] || null;
       } else if (i.indexOf('health') === 0) {
-        healthMonitorData[i.replace('health_', '')] = values[i];
+        if(i.includes('expected_codes')) {
+          healthMonitorData[i.replace('health_', '')] = `${values[i]}`;
+        } else {
+          healthMonitorData[i.replace('health_', '')] = values[i];
+        }
       }
     });
 
