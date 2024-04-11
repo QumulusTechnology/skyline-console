@@ -330,6 +330,45 @@ export const sessionPersitence = [
   },
 ];
 
+export const httpMethods = [
+  {
+    label: 'CONNECT',
+    value: 'CONNECT'
+  },
+  {
+    label: 'DELETE',
+    value: 'DELETE'
+  },
+  {
+    label: 'GET',
+    value: 'GET'
+  },
+  {
+    label: 'HEAD',
+    value: 'HEAD'
+  },
+  {
+    label: 'OPTIONS',
+    value: 'OPTIONS'
+  },
+  {
+    label: 'PATCH',
+    value: 'PATCH'
+  },
+  {
+    label: 'POST',
+    value: 'POST'
+  },
+  {
+    label: 'PUT',
+    value: 'PUT'
+  },
+  {
+    label: 'TRACE',
+    value: 'TRACE'
+  },
+];
+
 export const INSERT_HEADERS = {
   'X-Forwarded-For': t('Specify the client IP address'),
   'X-Forwarded-Port': t('Specify the listener port'),

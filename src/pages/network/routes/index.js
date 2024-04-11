@@ -32,6 +32,8 @@ import QoSPolicyDetail from '../containers/QoSPolicy/Detail';
 import LoadBalancers from '../containers/LoadBalancers';
 import StepCreateLoadBalancer from '../containers/LoadBalancers/LoadBalancerInstance/actions/StepCreate';
 import LoadBalancerDetail from '../containers/LoadBalancers/LoadBalancerInstance/Detail';
+import StepCreateLoadBalancerPool from '../containers/LoadBalancers/Pool/Actions/CreatePool';
+import LoadBalancerPoolDetail from '../containers/LoadBalancers/Pool/Detail';
 import ListenerDetail from '../containers/LoadBalancers/Listener/Detail';
 import VPN from '../containers/VPN';
 import IPsecSiteConnectionDetail from '../containers/VPN/IPsecSiteConnection/Detail';
@@ -194,6 +196,26 @@ export default [
       {
         path: `${PATH}/load-balancers-admin/detail/:id`,
         component: LoadBalancerDetail,
+        exact: true,
+      },
+      {
+        path: `${PATH}/load-balancers/:id/create-pool`,
+        component: StepCreateLoadBalancerPool,
+        exact: true,
+      },
+      {
+        path: `${PATH}/load-balancers-admin/:id/create-pool`,
+        component: StepCreateLoadBalancerPool,
+        exact: true,
+      },
+      {
+        path: `${PATH}/load-balancers/:loadBalancerId/pool/:id`,
+        component: LoadBalancerPoolDetail,
+        exact: true,
+      },
+      {
+        path: `${PATH}/load-balancers-admin/:loadBalancerId/pool/:id`,
+        component: LoadBalancerPoolDetail,
         exact: true,
       },
       {

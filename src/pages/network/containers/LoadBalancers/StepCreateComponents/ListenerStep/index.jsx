@@ -108,10 +108,10 @@ export class ListenerStep extends Base {
     ];
   }
 
-  onChangeProtocol = (e) => {
+  onChangeProtocol = () => {
     this.updateContext({
-      pool_protocol: e,
-      health_type: e,
+      pool_protocol: "",
+      health_type: "",
     });
   };
 

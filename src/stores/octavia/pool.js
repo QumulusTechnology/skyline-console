@@ -23,6 +23,22 @@ export class PoolStore extends Base {
   get listFilterByProject() {
     return true;
   }
+
+  createPoolMember(pool_id, newObject) {
+    const body = {};
+    body['member'] = newObject;
+    return this.submitting(this.client.members.create(pool_id, body));
+  }
+
+  editPoolMember({ pool_id, member_id }, newObject) {
+    const body = {};
+    body['member'] = newObject;
+    return this.submitting(this.client.members.update(pool_id, member_id, body));
+  }
+
+  deletePoolMember({pool_id, member_id}) {
+    return this.submitting(this.client.members.delete(pool_id, member_id));
+  }
 }
 
 const globalPoolStore = new PoolStore();

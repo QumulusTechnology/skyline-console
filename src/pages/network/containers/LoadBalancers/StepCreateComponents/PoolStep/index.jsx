@@ -32,9 +32,9 @@ export class PoolStep extends Base {
 
   get filterOptions() {
     const { context: { listener_protocol = '' } = {} } = this.props;
-    return poolProtocols.filter(
+    return listener_protocol ? poolProtocols.filter(
       (it) => it.listener[listener_protocol.toLowerCase()] === 'valid'
-    );
+    ) : poolProtocols ;
   }
 
   allowed = () => Promise.resolve();
@@ -77,10 +77,7 @@ export class PoolStep extends Base {
   }
 
   get formItems() {
-    const { pool_lb_algorithm, pool_tls_enabled, psp_type } = this.state;
-
-    console.log({ state: this.state, props: this.props });
-
+    const { pool_lb_algorithm, pool_tls_enabled, psp_type, pool_protocol } = this.state;
     return [
       {
         name: 'pool_name',
@@ -107,9 +104,13 @@ export class PoolStep extends Base {
         label: t('Pool Protocol'),
         type: 'select',
         options: this.filterOptions,
-        onChange: () => {
+        onChange: (e) => {
+          this.setState({
+            pool_protocol: e
+          });
+
           this.updateContext({
-            health_type: '',
+            health_type: "",
           });
         },
         required: true,
@@ -135,13 +136,13 @@ export class PoolStep extends Base {
         name: 'psp_persistence_timeout',
         label: t('Persistence Timeout'),
         type: 'input-number',
-        hidden: !psp_type,
+        hidden: !psp_type || pool_protocol !== 'UDP',
       },
       {
         name: 'psp_persistence_granularity',
         label: t('Peristence Granularity'),
         type: 'textarea',
-        hidden: !psp_type,
+        hidden: !psp_type || pool_protocol !== 'UDP',
       },
       {
         type: 'divider',
