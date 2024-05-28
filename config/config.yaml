@@ -1,6 +1,7 @@
 host: 0.0.0.0
 port: 8088
-server: http://localhost
+server: http://127.0.0.1:28000
+theme: default
 
 theme: default
 
@@ -10,4 +11,8 @@ globalVariables:
     - en
     - zh-hans
     - ko-kr
+<<<<<<< Updated upstream
     - ru
+=======
+    - ru
+>>>>>>> Stashed changes

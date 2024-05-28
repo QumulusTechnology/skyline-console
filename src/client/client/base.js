@@ -20,12 +20,20 @@ export default class BaseClient {
   }
 
   getUrl = (url) => {
+    console.log(this.projectInUrl);
+    console.log(this.baseUrl);
+    const newurl = this.baseUrl.replace(
+      '/api/openstack/v1/regionone/keystone',
+      ''
+    );
+    console.log(newurl);
+
     if (this.projectInUrl) {
       return url
-        ? `${this.baseUrl}/${this.project}/${url}`
-        : `${this.baseUrl}/${this.project}`;
+        ? `${newurl}/${this.project}/${url}`
+        : `${newurl}/${this.project}`;
     }
-    return url ? `${this.baseUrl}/${url}` : `${this.baseUrl}`;
+    return url ? `${newurl}/${url}` : `${newurl}`;
   };
 
   get enable() {

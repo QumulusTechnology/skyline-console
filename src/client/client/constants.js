@@ -59,7 +59,8 @@ export const getOriginEndpoint = (key) => {
   return endpoints[key];
 };
 
-export const skylineBase = () => '/api/openstack/skyline/api/v1';
+export const skylineBase = () => '/api/v1';
+// export const skylineBase = () => '/api/openstack/skyline/api/v1';
 export const keystoneBase = () => getOpenstackEndpoint('keystone');
 export const novaBase = () => getOpenstackEndpoint('nova');
 export const cinderBase = () => getOpenstackEndpoint('cinder');

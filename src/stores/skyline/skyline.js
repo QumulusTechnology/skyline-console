@@ -18,10 +18,10 @@ import Base from 'stores/base';
 
 export class SkylineStore extends Base {
   @observable
-  domains = [];
+  domains = ['default'];
 
   @observable
-  regions = [];
+  regions = ['RegionOne'];
 
   @observable
   sso = {};
@@ -32,14 +32,14 @@ export class SkylineStore extends Base {
 
   @action
   async fetchDomainList() {
-    const result = await this.client.domains();
-    this.domains = result;
+    // const result = await this.client.domains();
+    // this.domains = result;
   }
 
   @action
   async fetchRegionList() {
-    const result = await this.client.regions();
-    this.regions = result;
+    // const result = await this.client.regions();
+    // this.regions = result;
   }
 
   @action

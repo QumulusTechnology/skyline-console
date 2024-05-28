@@ -135,7 +135,7 @@ export class RootStore {
   }
 
   @action
-  updateUser(user, policies) {
+  async updateUser(user, policies) {
     this.user = user;
     this.policies = policies;
     const {
@@ -147,7 +147,7 @@ export class RootStore {
     this.projectName = projectName;
     this.version = version;
     this.endpoints = endpoints;
-    this.updateUserRoles(user);
+    await this.updateUserRoles(user);
     this.setKeystoneToken(user);
   }
 

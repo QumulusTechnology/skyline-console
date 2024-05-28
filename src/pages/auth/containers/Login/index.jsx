@@ -286,6 +286,7 @@ export class Login extends Component {
   getUserId = (str) => str.split(':')[1].trim().split('.')[0];
 
   onLoginFailed = (error, values) => {
+    console.log(error);
     this.setState({
       loading: false,
     });
@@ -312,6 +313,8 @@ export class Login extends Component {
       loading: false,
       error: false,
     });
+    console.log('rootStore.user');
+    console.log(this.rootStore.user);
     if (this.rootStore.user && !isEmpty(this.rootStore.user)) {
       this.rootStore.routing.push(this.nextPage);
     }
@@ -331,6 +334,7 @@ export class Login extends Component {
     const body = { domain, password, region, username };
     this.rootStore.login(body).then(
       () => {
+        console.log('hi');
         this.onLoginSuccess();
       },
       (error) => {
