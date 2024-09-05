@@ -334,6 +334,11 @@ export class Login extends Component {
       loading: false,
       error: false,
     });
+    window.dataLayer.push({
+      event: 'userLogin',
+      nameuserId: this.rootStore.user,
+    });
+
     if (this.rootStore.user && !isEmpty(this.rootStore.user)) {
       this.rootStore.routing.push(this.nextPage);
     }
