@@ -20,7 +20,6 @@ import { Provider } from 'mobx-react';
 // eslint-disable-next-line import/no-unresolved
 import 'styles/main.less';
 
-import Chatbot from 'src/components/Chatbot';
 import routes from './routes';
 import i18n from './i18n';
 
@@ -52,7 +51,6 @@ class App extends Component {
     return (
       initDone && (
         <>
-          <Chatbot />
           <Provider rootStore={rootStore}>
             <Router history={history}>{renderRoutes(routes)}</Router>
           </Provider>
