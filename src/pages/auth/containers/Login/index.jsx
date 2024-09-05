@@ -17,6 +17,7 @@ import { Input, Button, Select, Row, Col, Spin } from 'antd';
 import { inject, observer } from 'mobx-react';
 import { Link } from 'react-router-dom';
 import { InfoCircleFilled } from '@ant-design/icons';
+import globalUserStore from 'stores/keystone/user';
 import SimpleForm from 'components/SimpleForm';
 import globalSkylineStore from 'stores/skyline/skyline';
 import i18n from 'core/i18n';
@@ -329,14 +330,20 @@ export class Login extends Component {
     }
   };
 
-  onLoginSuccess = () => {
+  onLoginSuccess = async () => {
     this.setState({
       loading: false,
       error: false,
     });
+
+    const {
+      user: { user },
+    } = this.props.rootStore;
+    const detail = await globalUserStore.pureFetchDetail({ id: user.id });
     window.dataLayer.push({
       event: 'userLogin',
-      nameuserId: this.rootStore.user,
+      username: detail.name || '-',
+      userId: detail.id,
     });
 
     if (this.rootStore.user && !isEmpty(this.rootStore.user)) {
