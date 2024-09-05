@@ -261,10 +261,7 @@ export class BaseLayout extends Component {
     const { pathname } = this.props.location;
     const currentRoutes = this.getCurrentMenu(pathname);
 
-    const chatBot = document.querySelector('#Botsonic-wrapper');
-    if (chatBot) {
-      chatBot.style.display = 'block';
-    }
+   
 
     return (
       <div className={styles['base-layout']}>
