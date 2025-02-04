@@ -153,6 +153,10 @@ jobs:
           sudo bash -c 'cat << EOF > /etc/kolla/template-overrides.j2
           {% extends parent_template %}
 
+          {% block base_footer %}
+          RUN pip install jaeger-client
+          {% endblock %}
+
           {% block base_ubuntu_package_sources_list %}
           {% endblock %}
           EOF'
