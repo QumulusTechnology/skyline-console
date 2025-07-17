@@ -163,6 +163,12 @@ jobs:
 
           {% block ${REPOSITORY//-/_}_base_footer %}
           {% endblock %}
+
+          {% block skyline_apiserver_footer %}
+          RUN apt update && apt-get install -y default-libmysqlclient-dev build-essential pkg-config && pip install mysqlclient
+          {% endblock %}
+
+
           EOF"
 
       - name: compile javascript
